@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
+import { load, save, STORAGE_KEYS } from './storage';
 
 function App() {
   const [barbers] = useState(['Felipe', 'David', 'Kevin']);
@@ -11,11 +12,20 @@ function App() {
     { id: 5, name: 'Afeitada Tradicional', price: 20000 },
     { id: 6, name: 'Corte Infantil', price: 20000 }
   ]);
-  const [haircuts, setHaircuts] = useState([]);
-  const [selectedBarber, setSelectedBarber] = useState('Felipe');
+  const [haircuts, setHaircuts] = useState(() => load(STORAGE_KEYS.haircuts, []));
+  const [selectedBarber, setSelectedBarber] = useState(() => load(STORAGE_KEYS.selectedBarber, 'Felipe'));
   const [selectedService, setSelectedService] = useState('');
   const [price, setPrice] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // Persist to localStorage when state changes
+  useEffect(() => {
+    save(STORAGE_KEYS.haircuts, haircuts);
+  }, [haircuts]);
+
+  useEffect(() => {
+    save(STORAGE_KEYS.selectedBarber, selectedBarber);
+  }, [selectedBarber]);
 
   const addHaircut = () => {
     if (selectedService && price && date) {
