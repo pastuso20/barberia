@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+/dist/
+/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Coverage
+coverage/
+
+# Environment variables (keep secrets out of git)
+.env
+.env.*
+!.env.example
+
+# Vite cache
+.vite/
+
+# Editor/IDE settings
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.swp
+*.swo
+
+# ESLint cache
+.eslintcache
