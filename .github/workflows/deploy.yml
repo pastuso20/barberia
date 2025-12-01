@@ -30,6 +30,8 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          VITE_BASE: /barberia/
         run: npm run build
 
       - name: Upload Pages artifact
