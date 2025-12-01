@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
+import { fetchHaircuts, insertHaircut, removeHaircut } from './db';
 import { load, save, STORAGE_KEYS } from './storage';
 
 function App() {
@@ -12,16 +13,29 @@ function App() {
     { id: 5, name: 'Afeitada Tradicional', price: 20000 },
     { id: 6, name: 'Corte Infantil', price: 20000 }
   ]);
-  const [haircuts, setHaircuts] = useState(() => load(STORAGE_KEYS.haircuts, []));
+  const [haircuts, setHaircuts] = useState([]);
   const [selectedBarber, setSelectedBarber] = useState(() => load(STORAGE_KEYS.selectedBarber, 'Felipe'));
   const [selectedService, setSelectedService] = useState('');
   const [price, setPrice] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Persist to localStorage when state changes
+  // Load haircuts from database
   useEffect(() => {
-    save(STORAGE_KEYS.haircuts, haircuts);
-  }, [haircuts]);
+    (async () => {
+      try {
+        setLoading(true);
+        const rows = await fetchHaircuts();
+        setHaircuts(rows);
+        setError('');
+      } catch (err) {
+        setError('Error cargando datos');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     save(STORAGE_KEYS.selectedBarber, selectedBarber);
@@ -30,21 +44,33 @@ function App() {
   const addHaircut = () => {
     if (selectedService && price && date) {
       const service = services.find(s => s.id === parseInt(selectedService));
-      const newHaircut = {
-        id: Date.now(),
-        barber: selectedBarber,
-        service: service.name,
-        price: parseFloat(price),
-        date: date
-      };
-      setHaircuts([...haircuts, newHaircut]);
-      setSelectedService('');
-      setPrice('');
+      (async () => {
+        try {
+          const inserted = await insertHaircut({
+            barber: selectedBarber,
+            service: service.name,
+            price: parseFloat(price),
+            date,
+          });
+          setHaircuts([...haircuts, inserted]);
+          setSelectedService('');
+          setPrice('');
+        } catch (err) {
+          setError('No se pudo guardar el corte');
+        }
+      })();
     }
   };
 
   const deleteHaircut = (id) => {
-    setHaircuts(haircuts.filter(haircut => haircut.id !== id));
+    (async () => {
+      try {
+        await removeHaircut(id);
+        setHaircuts(haircuts.filter(haircut => haircut.id !== id));
+      } catch (err) {
+        setError('No se pudo eliminar el corte');
+      }
+    })();
   };
 
   const generatePDF = () => {
@@ -133,6 +159,16 @@ function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {error && (
+          <div className="mb-4 p-3 rounded bg-red-50 text-red-700 border border-red-200">
+            {error}
+          </div>
+        )}
+        {loading && (
+          <div className="mb-4 p-3 rounded bg-gray-50 text-gray-700 border border-gray-200">
+            Cargando datos...
+          </div>
+        )}
         {/* Add Haircut Form */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Agregar Nuevo Corte</h2>

@@ -5,6 +5,10 @@
 [build.environment]
   NODE_VERSION = "18"
   VITE_BASE = "/"
+  # Set these in Netlify UI as environment variables
+  # Values shown here are placeholders and should be removed if you prefer UI-only.
+  # VITE_SUPABASE_URL = ""
+  # VITE_SUPABASE_ANON_KEY = ""
 
 # Optional: SPA fallback so client-side routing works on refresh
 [[redirects]]
