@@ -1,6 +1,11 @@
 export const STORAGE_KEYS = {
   haircuts: 'barberia:haircuts',
   selectedBarber: 'barberia:selectedBarber',
+  productSales: 'barberia:products',
+  initialBalance: 'barberia:initialBalance',
+  cashFund: 'barberia:cashFund',
+  expenses: 'barberia:expenses',
+  nextOpeningBalance: 'barberia:nextOpeningBalance',
 };
 
 export function load(key, defaultValue) {
