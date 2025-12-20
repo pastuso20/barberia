@@ -5,20 +5,26 @@ import { load, save, STORAGE_KEYS } from './storage';
 function App() {
   const [barbers] = useState(['Felipe', 'David', 'Kevin']);
   const [services] = useState([
-    { id: 1, name: 'Corte Clásico', price: 25000 },
-    { id: 2, name: 'Corte + Barba', price: 35000 },
-    { id: 3, name: 'Corte Degradado', price: 30000 },
-    { id: 4, name: 'Arreglo de Barba', price: 15000 },
-    { id: 5, name: 'Afeitada Tradicional', price: 20000 },
-    { id: 6, name: 'Corte Infantil', price: 20000 }
+    { id: 1, name: 'Corte sencillo', price: 17000 },
+    { id: 2, name: 'Corte + barba', price: 22000 },
+    { id: 3, name: 'Barba + cerquillo', price: 10000 },
+    { id: 4, name: 'Cerquillo', price: 3000 },
+    { id: 5, name: 'Barba', price: 5000 },
+    { id: 6, name: 'Decoloración', price: 60000 },
+    { id: 7, name: 'Cejas', price: 3000 }
   ]);
   const [products] = useState([
-    { id: 1, name: 'Agua', price: 3000 },
-    { id: 2, name: 'Gaseosa', price: 4000 },
-    { id: 3, name: 'Six-pack de cerveza', price: 30000 },
-    { id: 4, name: 'Cerveza', price: 6000 },
-    { id: 5, name: 'Speed Max', price: 8000 },
-    { id: 6, name: 'Gatorade', price: 7000 }
+    { id: 1, name: 'Budweiser', price: 3000 },
+    { id: 2, name: 'Coronita', price: 4000 },
+    { id: 3, name: 'Águila', price: 3000 },
+    { id: 4, name: 'Andina Light', price: 3000 },
+    { id: 5, name: 'Club Colombia', price: 4000 },
+    { id: 6, name: 'Pony', price: 3000 },
+    { id: 7, name: 'Kola Román', price: 3000 },
+    { id: 8, name: 'Coca-Cola', price: 4000 },
+    { id: 9, name: 'Gatorade', price: 4500 },
+    { id: 10, name: 'Agua grande', price: 2000 },
+    { id: 11, name: 'Agua pequeña', price: 1000 }
   ]);
   const [haircuts, setHaircuts] = useState(() => load(STORAGE_KEYS.haircuts, []));
   const [selectedBarber, setSelectedBarber] = useState(() => load(STORAGE_KEYS.selectedBarber, 'Felipe'));
@@ -302,36 +308,45 @@ function App() {
     }
   };
 
-  const handleProductChange = (e) => {
-    const vals = Array.from(e.target.selectedOptions).map(o => o.value);
-    setSelectedProducts(vals);
-    if (vals.length) {
-      const sum = vals.reduce((acc, id) => {
-        const p = products.find(pp => pp.id === parseInt(id));
+  const handleProductToggle = (productId) => {
+    const idStr = String(productId);
+    setSelectedProducts((prev) => {
+      const next = prev.includes(idStr) ? prev.filter((id) => id !== idStr) : [...prev, idStr];
+      const nextSorted = next.sort((a, b) => parseInt(a) - parseInt(b));
+      const sum = nextSorted.reduce((acc, id) => {
+        const p = products.find((pp) => pp.id === parseInt(id));
         return acc + (p ? p.price : 0);
       }, 0);
-      setProductPrice(sum);
-    } else {
-      setProductPrice('');
-    }
+      setProductPrice(sum ? sum : '');
+      return nextSorted;
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-2xl font-bold text-gray-900">Barbería</h1>
-            <div className="flex items-center gap-6">
-              <div className="text-lg font-semibold text-red-600">
+    <div className="min-h-screen bg-brand-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex flex-col items-center gap-3 mb-6">
+          <div className="w-14 h-14 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center text-2xl text-brand-gold">
+            ✂️
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-brand-gold tracking-wide">
+            Barbería
+          </h1>
+        </div>
+      </div>
+
+      <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
+          <div className="flex flex-wrap items-center gap-6 justify-between">
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="text-lg font-semibold text-brand-gold">
                 Total Diario: ${(getDailyTotal() + getProductsTotal()).toLocaleString('es-CO')}
               </div>
-              <div className="text-lg font-semibold text-green-700">
+              <div className="text-lg font-semibold text-brand-gold">
                 Ganancia Mensual: ${getMonthlyProfit().toLocaleString('es-CO')}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700">Saldo Inicial</span>
+                <span className="text-sm text-brand-gold">Saldo Inicial</span>
                 <input
                   type="number"
                   value={initialBalance}
@@ -339,11 +354,11 @@ function App() {
                     const v = e.target.value;
                     setInitialBalance(v ? parseFloat(v) : 0);
                   }}
-                  className="w-28 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-28 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700">Fondo de Caja</span>
+                <span className="text-sm text-brand-gold">Fondo de Caja</span>
                 <input
                   type="number"
                   value={cashFund}
@@ -351,14 +366,14 @@ function App() {
                     const v = e.target.value;
                     setCashFund(v ? parseFloat(v) : 0);
                   }}
-                  className="w-28 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-28 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
                 />
               </div>
-              <div className="text-lg font-semibold text-gray-900">
+              <div className="text-lg font-semibold text-brand-gold">
                 Caja: ${getCashTotal().toLocaleString('es-CO')}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700">Apertura Siguiente Día</span>
+                <span className="text-sm text-brand-gold">Apertura Siguiente Día</span>
                 <input
                   type="number"
                   value={nextOpeningBalance}
@@ -366,14 +381,14 @@ function App() {
                     const v = e.target.value;
                     setNextOpeningBalance(v ? parseFloat(v) : 0);
                   }}
-                  className="w-32 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-32 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
                 />
                 <button
                   onClick={() => {
                     setInitialBalance(nextOpeningBalance || 0);
                     setNextOpeningBalance(0);
                   }}
-                  className="bg-gray-800 text-white px-3 py-1 rounded-md hover:bg-gray-900 transition-colors"
+                  className="bg-brand-black text-brand-gold px-3 py-1 rounded-md hover:bg-black/40 transition-colors"
                 >
                   Aplicar Apertura
                 </button>
@@ -381,7 +396,7 @@ function App() {
               <button
                 onClick={closeCashRegister}
                 disabled={haircuts.length === 0 && productSales.length === 0}
-                className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-brand-gold text-brand-black px-4 py-2 rounded-md hover:brightness-110 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Cerrar Caja
               </button>
@@ -391,16 +406,20 @@ function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Local storage mode: no loading/error banner */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Agregar Nuevo Corte</h2>
+        <div className="grid grid-cols-1 gap-8 mb-8">
+        <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-brand-gold text-xl">✂️</span>
+            <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Nuevo Corte</h2>
+          </div>
+          <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Barbero</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Barbero</label>
               <select
                 value={selectedBarber}
                 onChange={(e) => setSelectedBarber(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               >
                 {barbers.map(barber => (
                   <option key={barber} value={barber}>{barber}</option>
@@ -408,11 +427,11 @@ function App() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Servicio</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Servicio</label>
               <select
                 value={selectedService}
                 onChange={handleServiceChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               >
                 <option value="">Seleccionar servicio</option>
                 {services.map(service => (
@@ -421,31 +440,31 @@ function App() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Precio ($COP)</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">$ Precio</label>
               <input
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="25000"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
                 readOnly
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">📅 Fecha</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Pago</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Tipo de Pago</label>
               <select
                 value={paymentType}
                 onChange={(e) => setPaymentType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               >
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
@@ -455,57 +474,80 @@ function App() {
             <div className="flex items-end">
               <button
                 onClick={addHaircut}
-                className="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
               >
-                Agregar Corte
+                Agregar
               </button>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Agregar Producto Vendido</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Producto</label>
-              <select
-                value={selectedProducts}
-                onChange={handleProductChange}
-                multiple
-                size={products.length}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                {products.map(product => (
-                  <option key={product.id} value={product.id}>{product.name}</option>
-                ))}
-              </select>
+        <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-brand-gold text-xl">📦</span>
+            <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Producto Vendido</h2>
+          </div>
+          <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Productos</label>
+              <div className="max-h-64 overflow-auto rounded-md border border-gray-700 bg-brand-black">
+                <table className="min-w-full text-sm">
+                  <thead className="sticky top-0 bg-brand-black border-b border-gray-700">
+                    <tr className="text-left text-gray-300">
+                      <th className="px-3 py-2 w-12">✔</th>
+                      <th className="px-3 py-2">Producto</th>
+                      <th className="px-3 py-2 w-28">Precio</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {products.map((product) => (
+                      <tr key={product.id} className="hover:bg-black/20">
+                        <td className="px-3 py-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedProducts.includes(String(product.id))}
+                            onChange={() => handleProductToggle(product.id)}
+                            className="h-4 w-4 accent-brand-gold"
+                            aria-label={`Seleccionar ${product.name}`}
+                          />
+                        </td>
+                        <td className="px-3 py-2 text-gray-100">{product.name}</td>
+                        <td className="px-3 py-2 text-gray-300">
+                          ${product.price.toLocaleString('es-CO')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Precio ($COP)</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">$ Precio Total</label>
               <input
                 type="number"
                 value={productPrice}
                 onChange={(e) => setProductPrice(e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
                 readOnly
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">📅 Fecha</label>
               <input
                 type="date"
                 value={productDate}
                 onChange={(e) => setProductDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Pago</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Tipo de Pago</label>
               <select
                 value={productPaymentType}
                 onChange={(e) => setProductPaymentType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               >
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
@@ -515,52 +557,57 @@ function App() {
             <div className="flex items-end">
               <button
                 onClick={addProductSale}
-                className="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
               >
-                Agregar Producto
+                Agregar
               </button>
             </div>
           </div>
         </div>
+        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Registrar Gasto Interno</h2>
+        <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-brand-gold text-xl">📋</span>
+            <h2 className="text-2xl font-semibold font-serif text-brand-gold">Registrar Gasto Interno</h2>
+          </div>
+          <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Concepto</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Concepto</label>
               <input
                 type="text"
                 value={expenseName}
                 onChange={(e) => setExpenseName(e.target.value)}
                 placeholder="Compra de insumos"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Monto ($COP)</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">$ Monto</label>
               <input
                 type="number"
                 value={expenseAmount}
                 onChange={(e) => setExpenseAmount(e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">📅 Fecha</label>
               <input
                 type="date"
                 value={expenseDate}
                 onChange={(e) => setExpenseDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               />
             </div>
             <div className="flex items-end">
               <button
                 onClick={addExpense}
-                className="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
               >
-                Agregar Gasto
+                + Agregar
               </button>
             </div>
           </div>
@@ -569,10 +616,10 @@ function App() {
         {/* Barber Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {barbers.map(barber => (
-            <div key={barber} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{barber}</h3>
-              <p className="text-2xl font-bold text-red-600">${getBarberTotal(barber).toLocaleString('es-CO')}</p>
-              <p className="text-sm text-gray-600">
+            <div key={barber} className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
+              <h3 className="text-lg font-semibold text-brand-gold mb-2">{barber}</h3>
+              <p className="text-2xl font-bold text-brand-gold">${getBarberTotal(barber).toLocaleString('es-CO')}</p>
+              <p className="text-sm text-gray-400">
                 {haircuts.filter(h => h.barber === barber).length} cortes
               </p>
             </div>
@@ -580,29 +627,29 @@ function App() {
         </div>
 
         {/* Haircuts List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Cortes de Hoy</h2>
+        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+          <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-brand-gold">Cortes de Hoy</h2>
           </div>
           
           {haircuts.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-gray-400">
               No hay cortes registrados aún. ¡Agrega tu primer corte arriba!
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-700">
               {haircuts.map(haircut => (
-                <div key={haircut.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
+                <div key={haircut.id} className="p-4 flex justify-between items-center hover:bg-black/20">
                   <div>
-                    <span className="font-medium text-gray-900">{haircut.barber}</span>
-                    <span className="text-gray-600 ml-4">{haircut.service}</span>
-                    <span className="text-gray-600 ml-4">${haircut.price.toLocaleString('es-CO')}</span>
-                    <span className="text-gray-500 ml-4">{haircut.date}</span>
-                    <span className="text-gray-500 ml-4">{haircut.payment}</span>
+                    <span className="font-medium text-gray-100">{haircut.barber}</span>
+                    <span className="text-gray-300 ml-4">{haircut.service}</span>
+                    <span className="text-gray-300 ml-4">${haircut.price.toLocaleString('es-CO')}</span>
+                    <span className="text-gray-400 ml-4">{haircut.date}</span>
+                    <span className="text-gray-400 ml-4">{haircut.payment}</span>
                   </div>
                   <button
                     onClick={() => deleteHaircut(haircut.id)}
-                    className="text-red-600 hover:text-red-800 transition-colors"
+                    className="text-brand-gray hover:text-brand-gold transition-colors"
                   >
                     Eliminar
                   </button>
@@ -612,30 +659,30 @@ function App() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Productos Vendidos</h2>
-            <div className="text-lg font-semibold text-red-600">
+        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+          <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-brand-gold">Productos Vendidos</h2>
+            <div className="text-lg font-semibold text-brand-gold">
               Total Productos: ${getProductsTotal().toLocaleString('es-CO')}
             </div>
           </div>
           {productSales.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-gray-400">
               No hay productos registrados aún.
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-700">
               {productSales.map(item => (
-                <div key={item.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
+                <div key={item.id} className="p-4 flex justify-between items-center hover:bg-black/20">
                   <div>
-                    <span className="font-medium text-gray-900">{item.product}</span>
-                    <span className="text-gray-600 ml-4">${item.price.toLocaleString('es-CO')}</span>
-                    <span className="text-gray-500 ml-4">{item.date}</span>
-                    <span className="text-gray-500 ml-4">{item.payment}</span>
+                    <span className="font-medium text-gray-100">{item.product}</span>
+                    <span className="text-gray-300 ml-4">${item.price.toLocaleString('es-CO')}</span>
+                    <span className="text-gray-400 ml-4">{item.date}</span>
+                    <span className="text-gray-400 ml-4">{item.payment}</span>
                   </div>
                   <button
                     onClick={() => deleteProductSale(item.id)}
-                    className="text-red-600 hover:text-red-800 transition-colors"
+                    className="text-brand-gray hover:text-brand-gold transition-colors"
                   >
                     Eliminar
                   </button>
@@ -645,29 +692,29 @@ function App() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Gastos Internos</h2>
-            <div className="text-lg font-semibold text-red-600">
+        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+          <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-brand-gold">Gastos Internos</h2>
+            <div className="text-lg font-semibold text-brand-gold">
               Total Gastos: ${getExpensesTotal().toLocaleString('es-CO')}
             </div>
           </div>
           {expenses.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-gray-400">
               No hay gastos registrados aún.
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-700">
               {expenses.map(exp => (
-                <div key={exp.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
+                <div key={exp.id} className="p-4 flex justify-between items-center hover:bg-black/20">
                   <div>
-                    <span className="font-medium text-gray-900">{exp.name}</span>
-                    <span className="text-gray-600 ml-4">${exp.amount.toLocaleString('es-CO')}</span>
-                    <span className="text-gray-500 ml-4">{exp.date}</span>
+                    <span className="font-medium text-gray-100">{exp.name}</span>
+                    <span className="text-gray-300 ml-4">${exp.amount.toLocaleString('es-CO')}</span>
+                    <span className="text-gray-400 ml-4">{exp.date}</span>
                   </div>
                   <button
                     onClick={() => deleteExpense(exp.id)}
-                    className="text-red-600 hover:text-red-800 transition-colors"
+                    className="text-brand-gray hover:text-brand-gold transition-colors"
                   >
                     Eliminar
                   </button>

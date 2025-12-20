@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Simple burgundy/red color scheme
-        red: {
-          600: '#dc2626',
-          700: '#b91c1c',
-          900: '#7f1d1d'
+        brand: {
+          black: '#0b0b0b',
+          gray: '#1f2937',
+          gold: '#d4af37'
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif']
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif']
       }
     },
   },
