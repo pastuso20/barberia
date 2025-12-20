@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import { load, save, STORAGE_KEYS } from './storage';
 
 function App() {
-  const [barbers] = useState(['Felipe', 'David', 'Kevin']);
+  const [barbers] = useState(['Hernan', 'Manuel', 'Luigui']);
   const [services] = useState([
     { id: 1, name: 'Corte sencillo', price: 17000 },
     { id: 2, name: 'Corte + barba', price: 22000 },
@@ -27,7 +27,7 @@ function App() {
     { id: 11, name: 'Agua pequeña', price: 1000 }
   ]);
   const [haircuts, setHaircuts] = useState(() => load(STORAGE_KEYS.haircuts, []));
-  const [selectedBarber, setSelectedBarber] = useState(() => load(STORAGE_KEYS.selectedBarber, 'Felipe'));
+  const [selectedBarber, setSelectedBarber] = useState(() => load(STORAGE_KEYS.selectedBarber, 'Hernan'));
   const [selectedService, setSelectedService] = useState('');
   const [price, setPrice] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -49,6 +49,9 @@ function App() {
   useEffect(() => {
     save(STORAGE_KEYS.selectedBarber, selectedBarber);
   }, [selectedBarber]);
+  useEffect(() => {
+    if (!barbers.includes(selectedBarber)) setSelectedBarber(barbers[0]);
+  }, [barbers, selectedBarber]);
 
   // Persist haircuts
   useEffect(() => {
