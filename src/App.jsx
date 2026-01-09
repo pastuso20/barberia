@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { load, save, STORAGE_KEYS } from './storage';
+import { supabase } from './supabaseClient';
 
-function App() {
-  const [barbers] = useState(['Hernan', 'Manuel', 'Luigui']);
+const BARBERS = ['Hernan', 'Manuel', 'Luigui'];
+
+function AdminCashRegister({ onSignOut }) {
+  const [barbers] = useState(BARBERS);
   const [services] = useState([
     { id: 1, name: 'Corte sencillo', price: 17000 },
     { id: 2, name: 'Corte + barba', price: 22000 },
@@ -231,7 +235,7 @@ function App() {
     }, base);
   };
 
-  const closeCashRegister = () => {
+  const closeCashRegister = async () => {
     const doc = new jsPDF();
     const dateLabel = new Date().toLocaleString('es-CO');
     const haircutsTotal = getDailyTotal();
@@ -241,6 +245,38 @@ function App() {
     const finalCash = initialBalance + cashFund + haircutsTotal + productsTotal - expensesTotal;
     const haircutsByPay = getTotalsByPayment(haircuts);
     const productsByPay = getTotalsByPayment(productSales);
+
+    if (supabase) {
+      try {
+        const payload = {
+            initial_balance: initialBalance,
+            cash_fund: cashFund,
+            final_balance: finalCash,
+            total_sales: haircutsTotal + productsTotal,
+            total_haircuts: haircutsTotal,
+            total_products: productsTotal,
+            total_expenses: expensesTotal,
+            haircuts_data: haircuts,
+            products_data: productSales,
+            expenses_data: expenses,
+            payment_methods_summary: {
+                haircuts: haircutsByPay,
+                products: productsByPay
+            }
+        };
+
+        const { error } = await supabase.from('daily_closings').insert([payload]);
+        if (error) {
+            console.error('Error saving to DB:', error);
+            alert('Error al guardar el cierre en la base de datos: ' + error.message);
+        } else {
+            alert('Cierre guardado exitosamente en la base de datos.');
+        }
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        alert('Error inesperado al guardar en BD.');
+      }
+    }
 
     doc.setFontSize(20);
     doc.text('Cierre de Caja - Barbería', 20, 20);
@@ -403,12 +439,21 @@ function App() {
               >
                 Cerrar Caja
               </button>
+              {onSignOut ? (
+                <button
+                  onClick={onSignOut}
+                  className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors"
+                >
+                  Salir
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {supabase ? <AdminAppointmentsPanel /> : null}
         <div className="grid grid-cols-1 gap-8 mb-8">
         <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
           <div className="flex items-center gap-3 mb-2">
@@ -728,6 +773,603 @@ function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+function getDayRangeIso(dateStr) {
+  const start = new Date(`${dateStr}T00:00:00`);
+  const end = new Date(start.getTime());
+  end.setDate(end.getDate() + 1);
+  return { startIso: start.toISOString(), endIso: end.toISOString() };
+}
+
+function AdminAppointmentsPanel() {
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAppointments() {
+      if (!supabase) return;
+      setLoading(true);
+      setError('');
+      const { startIso, endIso } = getDayRangeIso(date);
+      const { data, error: qError } = await supabase
+        .from('appointments')
+        .select('id, barber, start_time, end_time, appointment_private(client_name, client_phone)')
+        .gte('start_time', startIso)
+        .lt('start_time', endIso)
+        .order('start_time', { ascending: true });
+      if (cancelled) return;
+      if (qError) {
+        setItems([]);
+        setError('No se pudieron cargar las citas.');
+      } else {
+        setItems(Array.isArray(data) ? data : []);
+      }
+      setLoading(false);
+    }
+    loadAppointments();
+    return () => {
+      cancelled = true;
+    };
+  }, [date]);
+
+  async function removeAppointment(id) {
+    if (!supabase) return;
+    setError('');
+    setLoading(true);
+    const { error: delError } = await supabase.from('appointments').delete().eq('id', id);
+    if (delError) setError('No se pudo eliminar la cita.');
+    const { startIso, endIso } = getDayRangeIso(date);
+    const { data } = await supabase
+      .from('appointments')
+      .select('id, barber, start_time, end_time, appointment_private(client_name, client_phone)')
+      .gte('start_time', startIso)
+      .lt('start_time', endIso)
+      .order('start_time', { ascending: true });
+    setItems(Array.isArray(data) ? data : []);
+    setLoading(false);
+  }
+
+  return (
+    <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+      <div className="flex items-center justify-between gap-4 mb-2 flex-wrap">
+        <div className="flex items-center gap-3">
+          <span className="text-brand-gold text-xl">📅</span>
+          <h2 className="text-2xl font-semibold font-serif text-brand-gold">Citas</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-brand-gold">Fecha</span>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+          />
+        </div>
+      </div>
+      <div className="h-0.5 bg-brand-gold w-16 mb-4"></div>
+      {error ? <div className="text-red-300 text-sm mb-3">{error}</div> : null}
+      {loading ? <div className="text-gray-300 text-sm mb-3">Cargando...</div> : null}
+      <div className="rounded-md border border-gray-700 bg-brand-black overflow-auto">
+        <table className="min-w-full text-sm">
+          <thead className="bg-brand-black border-b border-gray-700">
+            <tr className="text-left text-gray-300">
+              <th className="px-3 py-2 w-24">Hora</th>
+              <th className="px-3 py-2 w-40">Barbero</th>
+              <th className="px-3 py-2">Cliente</th>
+              <th className="px-3 py-2 w-32">Teléfono</th>
+              <th className="px-3 py-2 w-28"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-3 py-4 text-gray-300">
+                  No hay citas para este día.
+                </td>
+              </tr>
+            ) : (
+              items.map((it) => {
+                const privateRow = Array.isArray(it.appointment_private) ? it.appointment_private[0] : it.appointment_private;
+                const when = new Date(it.start_time);
+                return (
+                  <tr key={it.id} className="hover:bg-black/20">
+                    <td className="px-3 py-2 text-gray-100">{timeLabel(when)}</td>
+                    <td className="px-3 py-2 text-gray-100">{it.barber}</td>
+                    <td className="px-3 py-2 text-gray-100">{privateRow?.client_name ?? ''}</td>
+                    <td className="px-3 py-2 text-gray-300">{privateRow?.client_phone ?? ''}</td>
+                    <td className="px-3 py-2">
+                      <button
+                        onClick={() => removeAppointment(it.id)}
+                        className="text-brand-gray hover:text-brand-gold transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function BrandHeader({ right }) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col items-center gap-3 flex-1">
+          <div className="w-14 h-14 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center text-2xl text-brand-gold">
+            ✂️
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-brand-gold tracking-wide">
+            Barbería
+          </h1>
+        </div>
+        {right ? <div className="flex-shrink-0">{right}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+function HomePage() {
+  return (
+    <div className="min-h-screen bg-brand-black">
+      <BrandHeader />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
+          <h2 className="text-2xl font-semibold font-serif text-brand-gold mb-2">Selecciona una interfaz</h2>
+          <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              to="/admin"
+              className="block bg-brand-black border border-gray-700 rounded-xl p-5 hover:bg-black/30 transition-colors"
+            >
+              <div className="text-brand-gold font-semibold text-lg mb-1">Administrador</div>
+              <div className="text-gray-300 text-sm">Ingresar y gestionar caja y citas</div>
+            </Link>
+            <Link
+              to="/cliente"
+              className="block bg-brand-black border border-gray-700 rounded-xl p-5 hover:bg-black/30 transition-colors"
+            >
+              <div className="text-brand-gold font-semibold text-lg mb-1">Cliente</div>
+              <div className="text-gray-300 text-sm">Agendar cita y ver disponibilidad</div>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function buildSlots(dateStr) {
+  const start = new Date(`${dateStr}T09:00:00`);
+  const end = new Date(`${dateStr}T19:00:00`);
+  const slots = [];
+  for (let t = start.getTime(); t < end.getTime(); t += 30 * 60 * 1000) {
+    slots.push(new Date(t));
+  }
+  return slots;
+}
+
+function timeLabel(d) {
+  return d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+}
+
+function ClientBookingPage() {
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedBarber, setSelectedBarber] = useState(BARBERS[0]);
+  const [busy, setBusy] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadBusy() {
+      if (!supabase) return;
+      setLoading(true);
+      setError('');
+      const { data, error: rpcError } = await supabase.rpc('get_busy_slots', { p_date: date });
+      if (cancelled) return;
+      if (rpcError) {
+        setBusy([]);
+        setError('No se pudo cargar la disponibilidad.');
+      } else {
+        setBusy(Array.isArray(data) ? data : []);
+      }
+      setLoading(false);
+    }
+    loadBusy();
+    return () => {
+      cancelled = true;
+    };
+  }, [date]);
+
+  const busyStarts = busy
+    .filter((b) => b.barber === selectedBarber)
+    .reduce((set, b) => {
+      const t = new Date(b.start_time).getTime();
+      set.add(t);
+      return set;
+    }, new Set());
+
+  const availableSlots = buildSlots(date).filter((slot) => !busyStarts.has(slot.getTime()));
+
+  useEffect(() => {
+    if (selectedSlot && selectedSlot.toISOString().slice(0, 10) !== date) setSelectedSlot(null);
+  }, [date, selectedSlot]);
+
+  async function submit() {
+    if (!supabase) return;
+    setError('');
+    setSuccess('');
+    if (!clientName.trim() || !clientPhone.trim() || !selectedSlot) {
+      setError('Completa nombre, teléfono y selecciona una hora.');
+      return;
+    }
+    setLoading(true);
+    const { error: rpcError } = await supabase.rpc('create_appointment', {
+      p_barber: selectedBarber,
+      p_start_time: selectedSlot.toISOString(),
+      p_client_name: clientName.trim(),
+      p_client_phone: clientPhone.trim(),
+    });
+    if (rpcError) {
+      setError('No se pudo agendar. Puede que la hora ya no esté disponible.');
+      setLoading(false);
+      return;
+    }
+    setSuccess('Cita agendada correctamente.');
+    setClientName('');
+    setClientPhone('');
+    setSelectedSlot(null);
+    const { data } = await supabase.rpc('get_busy_slots', { p_date: date });
+    setBusy(Array.isArray(data) ? data : []);
+    setLoading(false);
+  }
+
+  return (
+    <div className="min-h-screen bg-brand-black">
+      <BrandHeader
+        right={
+          <Link
+            to="/"
+            className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
+          >
+            Inicio
+          </Link>
+        }
+      />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-brand-gold text-xl">📅</span>
+            <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agendar Cita</h2>
+          </div>
+          <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
+
+          {!supabase ? (
+            <div className="text-gray-300">
+              Faltan variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar citas.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Fecha</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Barbero</label>
+                  <select
+                    value={selectedBarber}
+                    onChange={(e) => setSelectedBarber(e.target.value)}
+                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  >
+                    {BARBERS.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Nombre</label>
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  />
+                </div>
+                {error ? <div className="text-red-300 text-sm">{error}</div> : null}
+                {success ? <div className="text-green-300 text-sm">{success}</div> : null}
+                <button
+                  onClick={submit}
+                  disabled={loading || !selectedSlot}
+                  className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  Confirmar cita
+                </button>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">Horas disponibles</div>
+                  {loading ? <div className="text-gray-300 text-xs">Cargando...</div> : null}
+                </div>
+                <div className="rounded-md border border-gray-700 bg-brand-black p-3">
+                  {availableSlots.length === 0 ? (
+                    <div className="text-gray-300 text-sm">No hay disponibilidad para este día.</div>
+                  ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {availableSlots.map((slot) => {
+                        const active = selectedSlot && slot.getTime() === selectedSlot.getTime();
+                        return (
+                          <button
+                            key={slot.toISOString()}
+                            onClick={() => setSelectedSlot(slot)}
+                            className={[
+                              'px-2 py-2 rounded-md border text-sm transition-colors',
+                              active
+                                ? 'bg-brand-gold text-brand-black border-brand-gold'
+                                : 'bg-brand-black text-gray-100 border-gray-700 hover:bg-black/30',
+                            ].join(' ')}
+                          >
+                            {timeLabel(slot)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <div className="text-gray-400 text-xs mt-2">Horario: 9:00 a 19:00 (citas de 30 min)</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminGatePage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [session, setSession] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    async function init() {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      if (!mounted) return;
+      setSession(data?.session ?? null);
+      setLoading(false);
+    }
+    init();
+    if (!supabase) return () => {};
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+    return () => {
+      mounted = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function check() {
+      if (!supabase || !session) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data, error: qError } = await supabase.from('admins').select('user_id').eq('user_id', session.user.id).maybeSingle();
+      if (cancelled) return;
+      if (qError) {
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(!!data);
+      }
+    }
+    check();
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
+  async function handleAuth() {
+    if (!supabase) return;
+    setError('');
+    setMessage('');
+    if (isRegistering) {
+      const { error: signUpError, data } = await supabase.auth.signUp({ email, password });
+      if (signUpError) {
+        setError(signUpError.message);
+      } else if (data.session) {
+        // Auto logged in
+      } else {
+        setMessage('Registro exitoso. Revisa tu correo o inicia sesión.');
+        setIsRegistering(false);
+      }
+    } else {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) setError('Correo o contraseña inválidos.');
+    }
+  }
+
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-brand-black">
+        <BrandHeader />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-gray-300">Cargando...</div>
+      </div>
+    );
+  }
+
+  if (!supabase) {
+    return (
+      <div className="min-h-screen bg-brand-black">
+        <BrandHeader
+          right={
+            <Link
+              to="/"
+              className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
+            >
+              Inicio
+            </Link>
+          }
+        />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-gray-300">
+          Faltan variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar login.
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-brand-black">
+        <BrandHeader
+          right={
+            <Link
+              to="/"
+              className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
+            >
+              Inicio
+            </Link>
+          }
+        />
+        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-brand-gold text-xl">🔒</span>
+              <h2 className="text-2xl font-semibold font-serif text-brand-gold">
+                {isRegistering ? 'Registrar Administrador' : 'Login Administrador'}
+              </h2>
+            </div>
+            <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
+            <div className="space-y-4">
+              {message && <div className="text-green-400 text-sm mb-2">{message}</div>}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Correo</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Contraseña</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                />
+              </div>
+              {error ? <div className="text-red-300 text-sm">{error}</div> : null}
+              <button
+                onClick={handleAuth}
+                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
+              >
+                {isRegistering ? 'Registrarse' : 'Ingresar'}
+              </button>
+              <div className="text-center mt-4">
+                <button
+                  onClick={() => {
+                    setIsRegistering(!isRegistering);
+                    setError('');
+                    setMessage('');
+                  }}
+                  className="text-gray-400 text-sm hover:text-brand-gold transition-colors underline"
+                >
+                  {isRegistering
+                    ? '¿Ya tienes cuenta? Inicia sesión'
+                    : '¿No tienes cuenta? Regístrate aquí'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-brand-black">
+        <BrandHeader
+          right={
+            <button
+              onClick={signOut}
+              className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
+            >
+              Salir
+            </button>
+          }
+        />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6 text-gray-300">
+            Tu usuario no está autorizado como administrador.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <AdminCashRegister onSignOut={signOut} />;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/cliente" element={<ClientBookingPage />} />
+      <Route path="/admin" element={<AdminGatePage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

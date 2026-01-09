@@ -7,4 +7,9 @@ export default defineConfig(() => ({
   // and GitHub Pages ("/barberia/") by setting env var VITE_BASE.
   base: process.env.VITE_BASE ?? '/',
   plugins: [react()],
+  server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+  },
 }))
