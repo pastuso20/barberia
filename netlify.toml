@@ -1,9 +1,9 @@
 [build]
-  command = "npm install && npm run build"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "22"
+  NODE_VERSION = "20"
   VITE_BASE = "/"
   # Set these in Netlify UI as environment variables
   # Values shown here are placeholders and should be removed if you prefer UI-only.
