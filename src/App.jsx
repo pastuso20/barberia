@@ -1166,9 +1166,6 @@ function AdminGatePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [message, setMessage] = useState('');
-
   useEffect(() => {
     let mounted = true;
     async function init() {
@@ -1216,21 +1213,8 @@ function AdminGatePage() {
   async function handleAuth() {
     if (!supabase) return;
     setError('');
-    setMessage('');
-    if (isRegistering) {
-      const { error: signUpError, data } = await supabase.auth.signUp({ email, password });
-      if (signUpError) {
-        setError(signUpError.message);
-      } else if (data.session) {
-        // Auto logged in
-      } else {
-        setMessage('Registro exitoso. Revisa tu correo o inicia sesión.');
-        setIsRegistering(false);
-      }
-    } else {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) setError('Correo o contraseña inválidos.');
-    }
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) setError('Correo o contraseña inválidos.');
   }
 
   async function signOut() {
@@ -1285,12 +1269,11 @@ function AdminGatePage() {
             <div className="flex items-center gap-3 mb-2">
               <span className="text-brand-gold text-xl">🔒</span>
               <h2 className="text-2xl font-semibold font-serif text-brand-gold">
-                {isRegistering ? 'Registrar Administrador' : 'Login Administrador'}
+                Login Administrador
               </h2>
             </div>
             <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
             <div className="space-y-4">
-              {message && <div className="text-green-400 text-sm mb-2">{message}</div>}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Correo</label>
                 <input
@@ -1314,22 +1297,8 @@ function AdminGatePage() {
                 onClick={handleAuth}
                 className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
               >
-                {isRegistering ? 'Registrarse' : 'Ingresar'}
+                Ingresar
               </button>
-              <div className="text-center mt-4">
-                <button
-                  onClick={() => {
-                    setIsRegistering(!isRegistering);
-                    setError('');
-                    setMessage('');
-                  }}
-                  className="text-gray-400 text-sm hover:text-brand-gold transition-colors underline"
-                >
-                  {isRegistering
-                    ? '¿Ya tienes cuenta? Inicia sesión'
-                    : '¿No tienes cuenta? Regístrate aquí'}
-                </button>
-              </div>
             </div>
           </div>
         </div>
