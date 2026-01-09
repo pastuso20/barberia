@@ -1,0 +1,17 @@
+[build]
+  command = "npm install && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  VITE_BASE = "/"
+  # Set these in Netlify UI as environment variables
+  # Values shown here are placeholders and should be removed if you prefer UI-only.
+  # VITE_SUPABASE_URL = ""
+  # VITE_SUPABASE_ANON_KEY = ""
+
+# Optional: SPA fallback so client-side routing works on refresh
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
