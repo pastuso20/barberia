@@ -455,11 +455,11 @@ function AdminCashRegister({ onSignOut }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {supabase ? <AdminAppointmentsPanel /> : null}
         <div className="grid grid-cols-1 gap-8 mb-8">
-        <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-brand-gold text-xl">✂️</span>
-            <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Nuevo Corte</h2>
-          </div>
+          <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-brand-gold text-xl">✂️</span>
+              <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Nuevo Corte</h2>
+            </div>
           <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div>
