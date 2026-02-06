@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { load, save, STORAGE_KEYS } from './storage';
 import { supabase } from './supabaseClient';
+import { Scissors, Mail, Lock, Shield, Calendar, User, Phone, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const BARBERS = ['Hernan', 'Manuel', 'Luigui'];
 
@@ -55,6 +57,7 @@ function AdminCashRegister({ onSignOut }) {
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
   const [nextOpeningBalance, setNextOpeningBalance] = useState(() => load(STORAGE_KEYS.nextOpeningBalance, 0));
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [showNewProduct, setShowNewProduct] = useState(false);
   
   // Persist selected barber
   useEffect(() => {
@@ -412,7 +415,7 @@ function AdminCashRegister({ onSignOut }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center text-xl text-brand-gold">
+            <div className="w-12 h-12 rounded-full bg-white/5 backdrop-blur-sm border border-brand-gold/20 flex items-center justify-center text-xl text-brand-gold hover:bg-white/10 transition">
               ✂️
             </div>
             <h1 className="text-3xl font-semibold font-serif text-brand-gold tracking-wide">
@@ -423,7 +426,7 @@ function AdminCashRegister({ onSignOut }) {
           <div className="relative">
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className="w-10 h-10 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center overflow-hidden hover:border-brand-gold transition-colors focus:outline-none"
+              className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-sm border border-brand-gold/20 flex items-center justify-center overflow-hidden hover:bg-white/10 transition focus:outline-none"
             >
               <span className="text-xl">👤</span>
             </button>
@@ -458,45 +461,65 @@ function AdminCashRegister({ onSignOut }) {
       </div>
 
       <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
-          <div className="flex flex-wrap items-center gap-6 justify-between">
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="text-lg font-semibold text-brand-gold">
-                Total Diario: ${(getDailyTotal() + getProductsTotal()).toLocaleString('es-CO')}
+        <div className="grid gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-brand-gold/30 bg-black/30 backdrop-blur-sm p-5 shadow-lg">
+              <div className="text-xs uppercase tracking-wider text-gray-300 mb-2">Total Diario</div>
+              <div className="text-2xl sm:text-3xl font-bold text-brand-gold drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]">
+                ${(getDailyTotal() + getProductsTotal()).toLocaleString('es-CO')}
               </div>
-              <div className="text-lg font-semibold text-brand-gold">
-                Ganancia Mensual: ${getMonthlyProfit().toLocaleString('es-CO')}
+            </div>
+            <div className="rounded-2xl border border-brand-gold/20 bg-black/20 backdrop-blur-sm p-5 shadow-md">
+              <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">Ganancia Mensual</div>
+              <div className="text-xl sm:text-2xl font-semibold text-brand-gold">
+                ${getMonthlyProfit().toLocaleString('es-CO')}
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Saldo Inicial</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                  <input
+                    type="number"
+                    value={initialBalance}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setInitialBalance(v ? parseFloat(v) : 0);
+                    }}
+                    className="w-full pl-7 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Saldo Inicial</label>
-                <input
-                  type="number"
-                  value={initialBalance}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setInitialBalance(v ? parseFloat(v) : 0);
-                  }}
-                  className="w-28 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                />
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Fondo de Caja</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                  <input
+                    type="number"
+                    value={cashFund}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setCashFund(v ? parseFloat(v) : 0);
+                    }}
+                    className="w-full pl-7 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                  />
+                </div>
               </div>
+            </div>
+            <div className="mt-6 text-center">
+              <div className="text-xs uppercase tracking-wider text-gray-400 mb-1">Caja</div>
+              <div className="text-3xl sm:text-4xl font-bold text-brand-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]">
+                ${getCashTotal().toLocaleString('es-CO')}
+              </div>
+            </div>
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Fondo de Caja</label>
-                <input
-                  type="number"
-                  value={cashFund}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setCashFund(v ? parseFloat(v) : 0);
-                  }}
-                  className="w-28 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                />
-              </div>
-              <div className="text-lg font-semibold text-brand-gold">
-                Caja: ${getCashTotal().toLocaleString('es-CO')}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Apertura Siguiente Día</label>
-                <div className="flex items-center gap-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Apertura Siguiente Día</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
                   <input
                     type="number"
                     value={nextOpeningBalance}
@@ -504,18 +527,20 @@ function AdminCashRegister({ onSignOut }) {
                       const v = e.target.value;
                       setNextOpeningBalance(v ? parseFloat(v) : 0);
                     }}
-                    className="w-32 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                    className="w-full pl-7 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
                   />
-                  <button
-                    onClick={() => {
-                      setInitialBalance(nextOpeningBalance || 0);
-                      setNextOpeningBalance(0);
-                    }}
-                    className="bg-brand-black text-brand-gold px-3 py-1 rounded-md hover:bg-black/40 transition-colors"
-                  >
-                    Aplicar Apertura
-                  </button>
                 </div>
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={() => {
+                    setInitialBalance(nextOpeningBalance || 0);
+                    setNextOpeningBalance(0);
+                  }}
+                  className="w-full bg-brand-gold text-brand-black px-4 py-3 rounded-xl font-bold tracking-wide hover:brightness-110 transition-shadow shadow-md"
+                >
+                  Aplicar Apertura
+                </button>
               </div>
             </div>
           </div>
@@ -525,7 +550,7 @@ function AdminCashRegister({ onSignOut }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {supabase ? <AdminAppointmentsPanel /> : null}
         <div className="grid grid-cols-1 gap-8 mb-8">
-          <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
+          <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-brand-gold text-xl">✂️</span>
               <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Nuevo Corte</h2>
@@ -537,7 +562,7 @@ function AdminCashRegister({ onSignOut }) {
               <select
                 value={selectedBarber}
                 onChange={(e) => setSelectedBarber(e.target.value)}
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
               >
                 {barbers.map(barber => (
                   <option key={barber} value={barber}>{barber}</option>
@@ -549,7 +574,7 @@ function AdminCashRegister({ onSignOut }) {
               <select
                 value={selectedService}
                 onChange={handleServiceChange}
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
               >
                 <option value="">Seleccionar servicio</option>
                 {services.map(service => (
@@ -559,14 +584,17 @@ function AdminCashRegister({ onSignOut }) {
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">$ Precio</label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="25000"
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                readOnly
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="25000"
+                  className="w-full pl-7 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                  readOnly
+                />
+              </div>
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">📅 Fecha</label>
@@ -574,7 +602,7 @@ function AdminCashRegister({ onSignOut }) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
               />
             </div>
             <div>
@@ -582,7 +610,7 @@ function AdminCashRegister({ onSignOut }) {
               <select
                 value={paymentType}
                 onChange={(e) => setPaymentType(e.target.value)}
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
               >
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
@@ -593,7 +621,7 @@ function AdminCashRegister({ onSignOut }) {
               <label className="block text-xs font-semibold uppercase tracking-wider text-transparent mb-2">Acción</label>
               <button
                 onClick={addHaircut}
-                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
+                className="w-full bg-brand-gold text-brand-black px-4 py-3 rounded-xl font-bold hover:brightness-110 transition-colors shadow-md"
               >
                 Agregar
               </button>
@@ -601,90 +629,99 @@ function AdminCashRegister({ onSignOut }) {
           </div>
         </div>
 
-        <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
+        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-brand-gold text-xl">📦</span>
             <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Producto Vendido</h2>
           </div>
           <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Productos</label>
-              <div className="max-h-64 overflow-auto rounded-md border border-gray-700 bg-brand-black">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8">
+              <div className="mb-3 text-xs uppercase tracking-wider text-gray-300 font-semibold">Productos</div>
+              <div
+                className="h-[420px] overflow-auto rounded-2xl border border-brand-gold/25 bg-black/25 backdrop-blur-sm"
+                style={{ scrollbarWidth: 'thin' }}
+              >
                 <table className="min-w-full text-sm">
-                  <thead className="sticky top-0 bg-brand-black border-b border-gray-700">
+                  <thead className="sticky top-0 bg-black/30 backdrop-blur-sm border-b border-brand-gold/20">
                     <tr className="text-left text-gray-300">
-                      <th className="px-3 py-2 w-12">✔</th>
-                      <th className="px-3 py-2">Producto</th>
-                      <th className="px-3 py-2 w-28">Precio</th>
-                      <th className="px-3 py-2 w-32">Acciones</th>
+                      <th className="px-3 py-3 w-12">✔</th>
+                      <th className="px-3 py-3">Producto</th>
+                      <th className="px-3 py-3 w-28">Precio</th>
+                      <th className="px-3 py-3 w-24"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {products.map((product) => (
-                      <tr key={product.id} className="hover:bg-black/20">
-                        <td className="px-3 py-2">
+                      <tr key={product.id} className="group hover:bg-black/20">
+                        <td className="px-3 py-3 sm:py-4">
                           <input
                             type="checkbox"
                             checked={selectedProducts.includes(String(product.id))}
                             onChange={() => handleProductToggle(product.id)}
-                            className="h-4 w-4 accent-brand-gold"
+                            className="h-5 w-5 accent-brand-gold"
                             aria-label={`Seleccionar ${product.name}`}
                           />
                         </td>
-                        <td className="px-3 py-2 text-gray-100">
+                        <td className="px-3 py-3 sm:py-4 text-gray-100">
                           {editingProductId === product.id ? (
                             <input
                               type="text"
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
-                              className="w-full px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                              className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
                             />
                           ) : (
                             product.name
                           )}
                         </td>
-                        <td className="px-3 py-2 text-gray-300">
+                        <td className="px-3 py-3 sm:py-4 text-gray-300">
                           {editingProductId === product.id ? (
                             <input
                               type="number"
                               value={editPrice}
                               onChange={(e) => setEditPrice(e.target.value)}
-                              className="w-24 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                              className="w-28 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
                             />
                           ) : (
                             `$${product.price.toLocaleString('es-CO')}`
                           )}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-3 sm:py-4">
                           {editingProductId === product.id ? (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                               <button
                                 onClick={saveEditProduct}
                                 className="text-brand-gold hover:brightness-110 transition-colors"
+                                aria-label="Guardar"
                               >
                                 Guardar
                               </button>
                               <button
                                 onClick={cancelEditProduct}
                                 className="text-brand-gray hover:text-gray-300 transition-colors"
+                                aria-label="Cancelar"
                               >
                                 Cancelar
                               </button>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => startEditProduct(product.id)}
-                                className="text-brand-gray hover:text-brand-gold transition-colors"
+                                className="text-gray-400 hover:text-brand-gold transition-colors"
+                                aria-label="Editar"
+                                title="Editar"
                               >
-                                Editar
+                                ✏️
                               </button>
                               <button
                                 onClick={() => deleteProduct(product.id)}
-                                className="text-brand-gray hover:text-red-300 transition-colors"
+                                className="text-gray-400 hover:text-red-300 transition-colors"
+                                aria-label="Eliminar"
+                                title="Eliminar"
                               >
-                                Eliminar
+                                🗑️
                               </button>
                             </div>
                           )}
@@ -694,78 +731,85 @@ function AdminCashRegister({ onSignOut }) {
                   </tbody>
                 </table>
               </div>
-              <div className="mt-4">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Nuevo Producto</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newProductName}
-                    onChange={(e) => setNewProductName(e.target.value)}
-                    placeholder="Nombre"
-                    className="w-48 px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                  />
-                  <input
-                    type="number"
-                    value={newProductPrice}
-                    onChange={(e) => setNewProductPrice(e.target.value)}
-                    placeholder="Precio"
-                    className="w-32 px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                  />
+              <div className="mt-6 border-t border-brand-gold/20 pt-4">
+                <button
+                  onClick={() => setShowNewProduct(!showNewProduct)}
+                  className="w-full flex items-center justify-between text-brand-gold"
+                >
+                  <span className="text-sm font-semibold">¿No encuentras el producto? Créalo aquí</span>
+                  <span className="text-brand-gold">{showNewProduct ? '▾' : '▸'}</span>
+                </button>
+                {showNewProduct ? (
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input
+                      type="text"
+                      value={newProductName}
+                      onChange={(e) => setNewProductName(e.target.value)}
+                      placeholder="Nombre"
+                      className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    />
+                    <input
+                      type="number"
+                      value={newProductPrice}
+                      onChange={(e) => setNewProductPrice(e.target.value)}
+                      placeholder="Precio"
+                      className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    />
+                    <button
+                      onClick={addProduct}
+                      className="w-full bg-transparent border border-brand-gold text-brand-gold px-3 py-2 rounded-xl font-semibold hover:bg-brand-gold/10 transition-colors"
+                    >
+                      Crear Producto
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="lg:col-span-4">
+              <div className="rounded-2xl border border-brand-gold/20 bg-[#121212] p-6 shadow-lg">
+                <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">Resumen de Venta</div>
+                <div className="text-4xl sm:text-5xl font-bold text-brand-gold mb-4 drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]">
+                  ${Number(productPrice || 0).toLocaleString('es-CO')}
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">📅 Fecha</label>
+                    <input
+                      type="date"
+                      value={productDate}
+                      onChange={(e) => setProductDate(e.target.value)}
+                      className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Tipo de Pago</label>
+                    <select
+                      value={productPaymentType}
+                      onChange={(e) => setProductPaymentType(e.target.value)}
+                      className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    >
+                      <option value="Efectivo">Efectivo</option>
+                      <option value="Transferencia">Transferencia</option>
+                      <option value="Tarjeta">Tarjeta</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-6">
                   <button
-                    onClick={addProduct}
-                    className="bg-brand-gold text-brand-black px-3 py-2 rounded-md font-semibold hover:brightness-110 transition-colors"
+                    onClick={addProductSale}
+                    className="w-full bg-brand-gold text-brand-black px-5 py-3 rounded-xl font-bold hover:brightness-110 transition-colors shadow-lg"
                   >
-                    Agregar
+                    Confirmar Venta
                   </button>
                 </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">$ Precio Total</label>
-              <input
-                type="number"
-                value={productPrice}
-                onChange={(e) => setProductPrice(e.target.value)}
-                placeholder="0"
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">📅 Fecha</label>
-              <input
-                type="date"
-                value={productDate}
-                onChange={(e) => setProductDate(e.target.value)}
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Tipo de Pago</label>
-              <select
-                value={productPaymentType}
-                onChange={(e) => setProductPaymentType(e.target.value)}
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-              >
-                <option value="Efectivo">Efectivo</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="Tarjeta">Tarjeta</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-transparent mb-2">Acción</label>
-              <button
-                onClick={addProductSale}
-                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
-              >
-                Agregar
-              </button>
             </div>
           </div>
         </div>
         </div>
 
-        <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg mb-8">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-brand-gold text-xl">📋</span>
             <h2 className="text-2xl font-semibold font-serif text-brand-gold">Registrar Gasto Interno</h2>
@@ -779,18 +823,21 @@ function AdminCashRegister({ onSignOut }) {
                 value={expenseName}
                 onChange={(e) => setExpenseName(e.target.value)}
                 placeholder="Compra de insumos"
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">$ Monto</label>
-              <input
-                type="number"
-                value={expenseAmount}
-                onChange={(e) => setExpenseAmount(e.target.value)}
-                placeholder="0"
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                <input
+                  type="number"
+                  value={expenseAmount}
+                  onChange={(e) => setExpenseAmount(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-7 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">📅 Fecha</label>
@@ -798,14 +845,14 @@ function AdminCashRegister({ onSignOut }) {
                 type="date"
                 value={expenseDate}
                 onChange={(e) => setExpenseDate(e.target.value)}
-                className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-transparent mb-2">Acción</label>
               <button
                 onClick={addExpense}
-                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
+                className="w-full bg-brand-gold text-brand-black px-4 py-3 rounded-xl font-bold hover:brightness-110 transition-colors shadow-md"
               >
                 + Agregar
               </button>
@@ -813,12 +860,11 @@ function AdminCashRegister({ onSignOut }) {
           </div>
         </div>
 
-        {/* Barber Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {barbers.map(barber => (
-            <div key={barber} className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30">
+            <div key={barber} className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
               <h3 className="text-lg font-semibold text-brand-gold mb-2">{barber}</h3>
-              <p className="text-2xl font-bold text-brand-gold">${getBarberTotal(barber).toLocaleString('es-CO')}</p>
+              <p className="text-2xl font-bold text-brand-gold drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]">${getBarberTotal(barber).toLocaleString('es-CO')}</p>
               <p className="text-sm text-gray-400">
                 {haircuts.filter(h => h.barber === barber).length} cortes
               </p>
@@ -826,8 +872,7 @@ function AdminCashRegister({ onSignOut }) {
           ))}
         </div>
 
-        {/* Haircuts List */}
-        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm shadow-lg mb-8">
           <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-brand-gold">Cortes de Hoy</h2>
           </div>
@@ -859,7 +904,7 @@ function AdminCashRegister({ onSignOut }) {
           )}
         </div>
 
-        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm shadow-lg mb-8">
           <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-brand-gold">Productos Vendidos</h2>
             <div className="text-lg font-semibold text-brand-gold">
@@ -892,7 +937,7 @@ function AdminCashRegister({ onSignOut }) {
           )}
         </div>
 
-        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
+        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm shadow-lg mb-8">
           <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-brand-gold">Gastos Internos</h2>
             <div className="text-lg font-semibold text-brand-gold">
@@ -987,28 +1032,28 @@ function AdminAppointmentsPanel() {
   }
 
   return (
-    <div className="bg-brand-gray p-6 rounded-2xl shadow-lg border border-brand-gold/30 mb-8">
-      <div className="flex items-center justify-between gap-4 mb-2 flex-wrap">
+        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
         <div className="flex items-center gap-3">
           <span className="text-brand-gold text-xl">📅</span>
           <h2 className="text-2xl font-semibold font-serif text-brand-gold">Citas</h2>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-brand-gold">Fecha</span>
+        <div className="w-full md:w-48 md:justify-self-end">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Fecha</label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
           />
         </div>
       </div>
       <div className="h-0.5 bg-brand-gold w-16 mb-4"></div>
       {error ? <div className="text-red-300 text-sm mb-3">{error}</div> : null}
       {loading ? <div className="text-gray-300 text-sm mb-3">Cargando...</div> : null}
-      <div className="rounded-md border border-gray-700 bg-brand-black overflow-auto">
+          <div className="rounded-xl border border-brand-gold/25 bg-black/25 backdrop-blur-sm overflow-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-brand-black border-b border-gray-700">
+              <thead className="bg-black/30 backdrop-blur-sm border-b border-brand-gold/20">
             <tr className="text-left text-gray-300">
               <th className="px-3 py-2 w-24">Hora</th>
               <th className="px-3 py-2 w-40">Barbero</th>
@@ -1056,16 +1101,20 @@ function AdminAppointmentsPanel() {
 function BrandHeader({ right }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex flex-col items-center gap-3 flex-1">
-          <div className="w-14 h-14 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center text-2xl text-brand-gold">
-            ✂️
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex flex-col items-center gap-3 md:flex-1">
+          <div className="w-14 h-14 rounded-full bg-black/25 backdrop-blur-sm border-[0.5px] border-brand-gold/40 flex items-center justify-center text-2xl text-brand-gold">
+            <Scissors className="w-7 h-7" />
           </div>
-          <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-brand-gold tracking-wide">
+          <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-brand-gold tracking-wider md:tracking-widest">
             Barbería
           </h1>
         </div>
-        {right ? <div className="flex-shrink-0">{right}</div> : null}
+        {right ? (
+          <div className="w-full md:w-auto flex justify-center md:justify-end">
+            {right}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -1075,27 +1124,38 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-brand-black">
       <BrandHeader />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
-          <h2 className="text-2xl font-semibold font-serif text-brand-gold mb-2">Selecciona una interfaz</h2>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="rounded-2xl border-[0.5px] border-brand-gold/40 bg-black/20 backdrop-blur-md p-6 shadow-lg"
+        >
+          <h2 className="text-2xl font-semibold font-serif text-brand-gold mb-2 tracking-wider">Selecciona una interfaz</h2>
           <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Link
               to="/admin"
-              className="block bg-brand-black border border-gray-700 rounded-xl p-5 hover:bg-black/30 transition-colors"
+              className="group block border border-brand-gold/25 bg-black/25 backdrop-blur-sm rounded-2xl p-6 transition-all hover:scale-105 hover:border-brand-gold/50"
             >
-              <div className="text-brand-gold font-semibold text-lg mb-1">Administrador</div>
+              <div className="flex items-center gap-3 mb-2">
+                <Shield className="w-6 h-6 text-brand-gold" />
+                <div className="text-brand-gold font-semibold text-lg">Administrador</div>
+              </div>
               <div className="text-gray-300 text-sm">Ingresar y gestionar caja y citas</div>
             </Link>
             <Link
               to="/cliente"
-              className="block bg-brand-black border border-gray-700 rounded-xl p-5 hover:bg-black/30 transition-colors"
+              className="group block border border-brand-gold/25 bg-black/25 backdrop-blur-sm rounded-2xl p-6 transition-all hover:scale-105 hover:border-brand-gold/50"
             >
-              <div className="text-brand-gold font-semibold text-lg mb-1">Cliente</div>
+              <div className="flex items-center gap-3 mb-2">
+                <Calendar className="w-6 h-6 text-brand-gold" />
+                <div className="text-brand-gold font-semibold text-lg">Cliente</div>
+              </div>
               <div className="text-gray-300 text-sm">Agendar cita y ver disponibilidad</div>
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
@@ -1204,7 +1264,7 @@ function ClientBookingPage() {
         }
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-        <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
+        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-brand-gold text-xl">📅</span>
             <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agendar Cita</h2>
@@ -1216,89 +1276,130 @@ function ClientBookingPage() {
               Faltan variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar citas.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Fecha</label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Barbero</label>
-                  <select
-                    value={selectedBarber}
-                    onChange={(e) => setSelectedBarber(e.target.value)}
-                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                  >
-                    {BARBERS.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="md:col-span-5 space-y-4">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Nombre</label>
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+                      <User className="w-5 h-5" />
+                    </span>
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="Nombre del cliente"
+                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Teléfono</label>
-                  <input
-                    type="tel"
-                    value={clientPhone}
-                    onChange={(e) => setClientPhone(e.target.value)}
-                    className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+                      <Phone className="w-5 h-5" />
+                    </span>
+                    <input
+                      type="tel"
+                      value={clientPhone}
+                      onChange={(e) => setClientPhone(e.target.value)}
+                      placeholder="310 000 0000"
+                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Barbero</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+                      <Scissors className="w-5 h-5" />
+                    </span>
+                    <select
+                      value={selectedBarber}
+                      onChange={(e) => setSelectedBarber(e.target.value)}
+                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    >
+                      {BARBERS.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Fecha</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+                      <Calendar className="w-5 h-5" />
+                    </span>
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    />
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400">
+                  {selectedSlot ? `Reserva con ${selectedBarber} el ${date} a las ${timeLabel(selectedSlot)}` : 'Selecciona una hora para continuar'}
                 </div>
                 {error ? <div className="text-red-300 text-sm">{error}</div> : null}
                 {success ? <div className="text-green-300 text-sm">{success}</div> : null}
                 <button
                   onClick={submit}
                   disabled={loading || !selectedSlot}
-                  className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full bg-brand-gold text-brand-black px-4 py-3 rounded-xl font-bold hover:brightness-110 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2"
                 >
-                  Confirmar cita
+                  <span>Confirmar cita</span>
+                  <Check className="w-5 h-5" />
                 </button>
               </div>
 
-              <div>
+              <div className="md:col-span-7">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">Horas disponibles</div>
                   {loading ? <div className="text-gray-300 text-xs">Cargando...</div> : null}
                 </div>
-                <div className="rounded-md border border-gray-700 bg-brand-black p-3">
-                  {availableSlots.length === 0 ? (
-                    <div className="text-gray-300 text-sm">No hay disponibilidad para este día.</div>
-                  ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {availableSlots.map((slot) => {
-                        const active = selectedSlot && slot.getTime() === selectedSlot.getTime();
-                        return (
-                          <button
-                            key={slot.toISOString()}
-                            onClick={() => setSelectedSlot(slot)}
-                            className={[
-                              'px-2 py-2 rounded-md border text-sm transition-colors',
-                              active
-                                ? 'bg-brand-gold text-brand-black border-brand-gold'
-                                : 'bg-brand-black text-gray-100 border-gray-700 hover:bg-black/30',
-                            ].join(' ')}
-                          >
-                            {timeLabel(slot)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+                <div className="rounded-2xl border border-brand-gold/25 bg-black/25 backdrop-blur-sm p-4">
+                  {(() => {
+                    const all = buildSlots(date);
+                    const morning = all.filter((s) => s.getHours() < 14);
+                    const afternoon = all.filter((s) => s.getHours() >= 14);
+                    const renderGroup = (label, list) => (
+                      <div className="mb-4">
+                        <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">{label}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {list.map((slot) => {
+                            const busy = busyStarts.has(slot.getTime());
+                            const active = !busy && selectedSlot && slot.getTime() === selectedSlot.getTime();
+                            const base = 'px-3 py-2 rounded-full border text-sm transition-all';
+                            const cls = busy
+                              ? 'opacity-40 text-gray-400 border-gray-700 line-through cursor-not-allowed'
+                              : active
+                              ? 'bg-brand-gold text-brand-black border-brand-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]'
+                              : 'bg-black/40 text-gray-100 border-brand-gold/25 hover:bg-black/50';
+                            return (
+                              <button
+                                key={slot.toISOString()}
+                                onClick={() => !busy && setSelectedSlot(slot)}
+                                className={`${base} ${cls}`}
+                                disabled={busy}
+                              >
+                                {timeLabel(slot)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                    return (
+                      <>
+                        {renderGroup('Mañana', morning)}
+                        {renderGroup('Tarde', afternoon)}
+                      </>
+                    );
+                  })()}
                 </div>
                 <div className="text-gray-400 text-xs mt-2">Horario: 9:00 a 19:00 (citas de 30 min)</div>
               </div>
@@ -1425,47 +1526,57 @@ function AdminGatePage() {
   if (!session) {
     return (
       <div className="min-h-screen bg-brand-black">
-        <BrandHeader
-          right={
-            <Link
-              to="/"
-              className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
-            >
-              Inicio
-            </Link>
-          }
-        />
+        <BrandHeader />
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-          <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-brand-gold text-xl">🔒</span>
-              <h2 className="text-2xl font-semibold font-serif text-brand-gold">{isRegistering ? 'Registrar Administrador' : 'Login Administrador'}</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="rounded-2xl border-[0.5px] border-brand-gold/40 bg-black/35 backdrop-blur-md p-6 shadow-lg"
+          >
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex items-center gap-3">
+                <span className="text-brand-gold text-xl">🔒</span>
+                <h2 className="text-2xl font-semibold font-serif text-brand-gold">{isRegistering ? 'Registrar Administrador' : 'Login Administrador'}</h2>
+              </div>
+              <Link
+                to="/"
+                className="bg-brand-black text-brand-gold px-3 py-1 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30 text-sm"
+              >
+                Inicio
+              </Link>
             </div>
             <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
             <div className="space-y-4">
               {message && <div className="text-green-400 text-sm mb-2">{message}</div>}
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Correo</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+                  <Mail className="w-5 h-5" />
+                </span>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  placeholder="Correo"
+                  className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Contraseña</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+                  <Lock className="w-5 h-5" />
+                </span>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  placeholder="Contraseña"
+                  className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
                 />
               </div>
               {error ? <div className="text-red-300 text-sm">{error}</div> : null}
               <button
                 onClick={handleAuth}
-                className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
+                className="w-full bg-brand-gold text-brand-black px-5 py-3 rounded-xl font-bold shadow-[0_10px_24px_rgba(212,175,55,0.25)] hover:brightness-110 transition-all"
               >
                 {isRegistering ? 'Registrarse' : 'Ingresar'}
               </button>
@@ -1482,7 +1593,7 @@ function AdminGatePage() {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -1514,13 +1625,31 @@ function AdminGatePage() {
 }
 
 function App() {
+  const location = useLocation();
+  const [transitioning, setTransitioning] = useState(false);
+  useEffect(() => {
+    setTransitioning(true);
+    const t = setTimeout(() => setTransitioning(false), 450);
+    return () => clearTimeout(t);
+  }, [location.pathname]);
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/cliente" element={<ClientBookingPage />} />
-      <Route path="/admin" element={<AdminGatePage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      {transitioning ? (
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.25 }}>
+            <div className="w-16 h-16 rounded-full border border-brand-gold/40 bg-black/20 flex items-center justify-center">
+              <Scissors className="w-7 h-7 text-brand-gold animate-spin" />
+            </div>
+          </motion.div>
+        </div>
+      ) : null}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/cliente" element={<ClientBookingPage />} />
+        <Route path="/admin" element={<AdminGatePage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 
