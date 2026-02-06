@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   cashFund: 'barberia:cashFund',
   expenses: 'barberia:expenses',
   nextOpeningBalance: 'barberia:nextOpeningBalance',
+  productsCatalog: 'barberia:productsCatalog',
 };
 
 export function load(key, defaultValue) {

@@ -17,7 +17,7 @@ function AdminCashRegister({ onSignOut }) {
     { id: 6, name: 'Decoloración', price: 60000 },
     { id: 7, name: 'Cejas', price: 3000 }
   ]);
-  const [products] = useState([
+  const DEFAULT_PRODUCTS = [
     { id: 1, name: 'Budweiser', price: 3000 },
     { id: 2, name: 'Coronita', price: 4000 },
     { id: 3, name: 'Águila', price: 3000 },
@@ -29,7 +29,8 @@ function AdminCashRegister({ onSignOut }) {
     { id: 9, name: 'Gatorade', price: 4500 },
     { id: 10, name: 'Agua grande', price: 2000 },
     { id: 11, name: 'Agua pequeña', price: 1000 }
-  ]);
+  ];
+  const [products, setProducts] = useState(() => load(STORAGE_KEYS.productsCatalog, DEFAULT_PRODUCTS));
   const [haircuts, setHaircuts] = useState(() => load(STORAGE_KEYS.haircuts, []));
   const [selectedBarber, setSelectedBarber] = useState(() => load(STORAGE_KEYS.selectedBarber, 'Hernan'));
   const [selectedService, setSelectedService] = useState('');
@@ -39,6 +40,11 @@ function AdminCashRegister({ onSignOut }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [productPrice, setProductPrice] = useState('');
   const [productDate, setProductDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editPrice, setEditPrice] = useState('');
   const [initialBalance, setInitialBalance] = useState(() => load(STORAGE_KEYS.initialBalance, 0));
   const [cashFund, setCashFund] = useState(() => load(STORAGE_KEYS.cashFund, 0));
   const [paymentType, setPaymentType] = useState('Efectivo');
@@ -48,6 +54,7 @@ function AdminCashRegister({ onSignOut }) {
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
   const [nextOpeningBalance, setNextOpeningBalance] = useState(() => load(STORAGE_KEYS.nextOpeningBalance, 0));
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   
   // Persist selected barber
   useEffect(() => {
@@ -65,6 +72,9 @@ function AdminCashRegister({ onSignOut }) {
   useEffect(() => {
     save(STORAGE_KEYS.productSales, productSales);
   }, [productSales]);
+  useEffect(() => {
+    save(STORAGE_KEYS.productsCatalog, products);
+  }, [products]);
 
   useEffect(() => {
     save(STORAGE_KEYS.initialBalance, initialBalance);
@@ -121,6 +131,42 @@ function AdminCashRegister({ onSignOut }) {
 
   const deleteProductSale = (id) => {
     setProductSales(productSales.filter(p => p.id !== id));
+  };
+  const addProduct = () => {
+    const name = newProductName.trim();
+    const priceNum = parseFloat(newProductPrice);
+    if (!name || isNaN(priceNum) || priceNum <= 0) return;
+    const nextId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+    const newItem = { id: nextId, name, price: priceNum };
+    setProducts([...products, newItem]);
+    setNewProductName('');
+    setNewProductPrice('');
+  };
+  const startEditProduct = (id) => {
+    const p = products.find(pp => pp.id === id);
+    if (!p) return;
+    setEditingProductId(id);
+    setEditName(p.name);
+    setEditPrice(String(p.price));
+  };
+  const saveEditProduct = () => {
+    if (editingProductId === null) return;
+    const name = editName.trim();
+    const priceNum = parseFloat(editPrice);
+    if (!name || isNaN(priceNum) || priceNum <= 0) return;
+    setProducts(products.map(p => p.id === editingProductId ? { ...p, name, price: priceNum } : p));
+    setEditingProductId(null);
+    setEditName('');
+    setEditPrice('');
+  };
+  const cancelEditProduct = () => {
+    setEditingProductId(null);
+    setEditName('');
+    setEditPrice('');
+  };
+  const deleteProduct = (id) => {
+    setProducts(products.filter(p => p.id !== id));
+    setSelectedProducts(prev => prev.filter(pid => parseInt(pid) !== id));
   };
   const addExpense = () => {
     if (expenseName && expenseAmount && expenseDate) {
@@ -363,14 +409,51 @@ function AdminCashRegister({ onSignOut }) {
 
   return (
     <div className="min-h-screen bg-brand-black">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="flex flex-col items-center gap-3 mb-6">
-          <div className="w-14 h-14 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center text-2xl text-brand-gold">
-            ✂️
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center text-xl text-brand-gold">
+              ✂️
+            </div>
+            <h1 className="text-3xl font-semibold font-serif text-brand-gold tracking-wide">
+              Barbería
+            </h1>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-brand-gold tracking-wide">
-            Barbería
-          </h1>
+
+          <div className="relative">
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="w-10 h-10 rounded-full bg-brand-gray border border-brand-gold/30 flex items-center justify-center overflow-hidden hover:border-brand-gold transition-colors focus:outline-none"
+            >
+              <span className="text-xl">👤</span>
+            </button>
+
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-brand-gray border border-brand-gold/30 rounded-lg shadow-xl z-50 py-1">
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    closeCashRegister();
+                  }}
+                  disabled={haircuts.length === 0 && productSales.length === 0}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-black/20 hover:text-brand-gold disabled:text-gray-500 disabled:cursor-not-allowed"
+                >
+                  Cerrar Caja
+                </button>
+                {onSignOut ? (
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      onSignOut();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-black/20 hover:text-brand-gold"
+                  >
+                    Salir
+                  </button>
+                ) : null}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -384,8 +467,8 @@ function AdminCashRegister({ onSignOut }) {
               <div className="text-lg font-semibold text-brand-gold">
                 Ganancia Mensual: ${getMonthlyProfit().toLocaleString('es-CO')}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-brand-gold">Saldo Inicial</span>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Saldo Inicial</label>
                 <input
                   type="number"
                   value={initialBalance}
@@ -396,8 +479,8 @@ function AdminCashRegister({ onSignOut }) {
                   className="w-28 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-brand-gold">Fondo de Caja</span>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Fondo de Caja</label>
                 <input
                   type="number"
                   value={cashFund}
@@ -411,42 +494,29 @@ function AdminCashRegister({ onSignOut }) {
               <div className="text-lg font-semibold text-brand-gold">
                 Caja: ${getCashTotal().toLocaleString('es-CO')}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-brand-gold">Apertura Siguiente Día</span>
-                <input
-                  type="number"
-                  value={nextOpeningBalance}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setNextOpeningBalance(v ? parseFloat(v) : 0);
-                  }}
-                  className="w-32 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                />
-                <button
-                  onClick={() => {
-                    setInitialBalance(nextOpeningBalance || 0);
-                    setNextOpeningBalance(0);
-                  }}
-                  className="bg-brand-black text-brand-gold px-3 py-1 rounded-md hover:bg-black/40 transition-colors"
-                >
-                  Aplicar Apertura
-                </button>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Apertura Siguiente Día</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={nextOpeningBalance}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setNextOpeningBalance(v ? parseFloat(v) : 0);
+                    }}
+                    className="w-32 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  />
+                  <button
+                    onClick={() => {
+                      setInitialBalance(nextOpeningBalance || 0);
+                      setNextOpeningBalance(0);
+                    }}
+                    className="bg-brand-black text-brand-gold px-3 py-1 rounded-md hover:bg-black/40 transition-colors"
+                  >
+                    Aplicar Apertura
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={closeCashRegister}
-                disabled={haircuts.length === 0 && productSales.length === 0}
-                className="bg-brand-gold text-brand-black px-4 py-2 rounded-md hover:brightness-110 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                Cerrar Caja
-              </button>
-              {onSignOut ? (
-                <button
-                  onClick={onSignOut}
-                  className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors"
-                >
-                  Salir
-                </button>
-              ) : null}
             </div>
           </div>
         </div>
@@ -519,7 +589,8 @@ function AdminCashRegister({ onSignOut }) {
                 <option value="Tarjeta">Tarjeta</option>
               </select>
             </div>
-            <div className="flex items-end">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-transparent mb-2">Acción</label>
               <button
                 onClick={addHaircut}
                 className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
@@ -546,6 +617,7 @@ function AdminCashRegister({ onSignOut }) {
                       <th className="px-3 py-2 w-12">✔</th>
                       <th className="px-3 py-2">Producto</th>
                       <th className="px-3 py-2 w-28">Precio</th>
+                      <th className="px-3 py-2 w-32">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
@@ -560,14 +632,92 @@ function AdminCashRegister({ onSignOut }) {
                             aria-label={`Seleccionar ${product.name}`}
                           />
                         </td>
-                        <td className="px-3 py-2 text-gray-100">{product.name}</td>
+                        <td className="px-3 py-2 text-gray-100">
+                          {editingProductId === product.id ? (
+                            <input
+                              type="text"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              className="w-full px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                            />
+                          ) : (
+                            product.name
+                          )}
+                        </td>
                         <td className="px-3 py-2 text-gray-300">
-                          ${product.price.toLocaleString('es-CO')}
+                          {editingProductId === product.id ? (
+                            <input
+                              type="number"
+                              value={editPrice}
+                              onChange={(e) => setEditPrice(e.target.value)}
+                              className="w-24 px-2 py-1 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                            />
+                          ) : (
+                            `$${product.price.toLocaleString('es-CO')}`
+                          )}
+                        </td>
+                        <td className="px-3 py-2">
+                          {editingProductId === product.id ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={saveEditProduct}
+                                className="text-brand-gold hover:brightness-110 transition-colors"
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                onClick={cancelEditProduct}
+                                className="text-brand-gray hover:text-gray-300 transition-colors"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => startEditProduct(product.id)}
+                                className="text-brand-gray hover:text-brand-gold transition-colors"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                onClick={() => deleteProduct(product.id)}
+                                className="text-brand-gray hover:text-red-300 transition-colors"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+              <div className="mt-4">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Nuevo Producto</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newProductName}
+                    onChange={(e) => setNewProductName(e.target.value)}
+                    placeholder="Nombre"
+                    className="w-48 px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  />
+                  <input
+                    type="number"
+                    value={newProductPrice}
+                    onChange={(e) => setNewProductPrice(e.target.value)}
+                    placeholder="Precio"
+                    className="w-32 px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
+                  />
+                  <button
+                    onClick={addProduct}
+                    className="bg-brand-gold text-brand-black px-3 py-2 rounded-md font-semibold hover:brightness-110 transition-colors"
+                  >
+                    Agregar
+                  </button>
+                </div>
               </div>
             </div>
             <div>
@@ -602,7 +752,8 @@ function AdminCashRegister({ onSignOut }) {
                 <option value="Tarjeta">Tarjeta</option>
               </select>
             </div>
-            <div className="flex items-end">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-transparent mb-2">Acción</label>
               <button
                 onClick={addProductSale}
                 className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
@@ -650,7 +801,8 @@ function AdminCashRegister({ onSignOut }) {
                 className="w-full px-3 py-2 bg-brand-black border border-gray-700 text-gray-100 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
               />
             </div>
-            <div className="flex items-end">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-transparent mb-2">Acción</label>
               <button
                 onClick={addExpense}
                 className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-lg font-semibold hover:brightness-110 transition-colors"
@@ -1216,19 +1368,23 @@ function AdminGatePage() {
     if (!supabase) return;
     setError('');
     setMessage('');
-    if (isRegistering) {
-      const { error: signUpError, data } = await supabase.auth.signUp({ email, password });
-      if (signUpError) {
-        setError(signUpError.message);
-      } else if (data.session) {
-        // Auto logged in
+    try {
+      if (isRegistering) {
+        const { error: signUpError, data } = await supabase.auth.signUp({ email, password });
+        if (signUpError) {
+          setError(signUpError.message);
+        } else if (data.session) {
+          // Auto logged in
+        } else {
+          setMessage('Registro exitoso. Revisa tu correo o inicia sesión.');
+          setIsRegistering(false);
+        }
       } else {
-        setMessage('Registro exitoso. Revisa tu correo o inicia sesión.');
-        setIsRegistering(false);
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) setError('Correo o contraseña inválidos.');
       }
-    } else {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) setError('Correo o contraseña inválidos.');
+    } catch (e) {
+      setError('No se pudo conectar a Supabase. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.');
     }
   }
 
@@ -1260,7 +1416,7 @@ function AdminGatePage() {
           }
         />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-gray-300">
-          Faltan variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar login.
+          Variables `VITE_SUPABASE_URL` y/o `VITE_SUPABASE_ANON_KEY` faltan o son inválidas. Configura correctamente tus credenciales de Supabase para habilitar el login.
         </div>
       </div>
     );

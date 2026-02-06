@@ -5,23 +5,6 @@ create table if not exists public.admins (
 
 alter table public.admins enable row level security;
 
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer set search_path = public
-as $$
-begin
-  insert into public.admins (user_id)
-  values (new.id);
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
 create policy "Admins can read self"
 on public.admins
 for select
@@ -117,13 +100,9 @@ begin
     select 1
     from public.appointments a
     where a.barber = p_barber
-      and (
-        (p_start_time >= a.start_time and p_start_time < a.end_time)
-        or (v_end_time > a.start_time and v_end_time <= a.end_time)
-        or (p_start_time <= a.start_time and v_end_time >= a.end_time)
-      )
+      and tstzrange(a.start_time, a.end_time, '[)') && tstzrange(p_start_time, v_end_time, '[)')
   ) then
-    raise exception 'El barbero ya está ocupado en ese horario.';
+    raise exception 'slot_not_available';
   end if;
 
   insert into public.appointments (barber, start_time, end_time)
@@ -137,30 +116,11 @@ begin
 end;
 $$;
 
--- New table for Daily Closings
-create table if not exists public.daily_closings (
-  id bigint generated always as identity primary key,
-  date date not null default current_date,
-  closed_at timestamptz not null default now(),
-  initial_balance numeric not null default 0,
-  cash_fund numeric not null default 0,
-  final_balance numeric not null default 0,
-  total_sales numeric not null default 0,
-  total_haircuts numeric not null default 0,
-  total_products numeric not null default 0,
-  total_expenses numeric not null default 0,
-  haircuts_data jsonb not null default '[]'::jsonb,
-  products_data jsonb not null default '[]'::jsonb,
-  expenses_data jsonb not null default '[]'::jsonb,
-  payment_methods_summary jsonb not null default '{}'::jsonb,
-  created_by uuid references auth.users(id)
-);
+grant select on public.admins to authenticated;
+grant insert on public.appointments to anon, authenticated;
+grant select, delete on public.appointments to authenticated;
+grant select on public.appointment_private to authenticated;
 
-alter table public.daily_closings enable row level security;
-
-create policy "Admins can manage daily closings"
-on public.daily_closings
-for all
-to authenticated
-using (public.is_admin())
-with check (public.is_admin());
+grant execute on function public.is_admin() to authenticated;
+grant execute on function public.get_busy_slots(date) to anon, authenticated;
+grant execute on function public.create_appointment(text, timestamptz, text, text) to anon, authenticated;
