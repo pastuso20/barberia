@@ -58,8 +58,8 @@ function AdminCashRegister({ onSignOut }) {
   const [nextOpeningBalance, setNextOpeningBalance] = useState(() => load(STORAGE_KEYS.nextOpeningBalance, 0));
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [showNewProduct, setShowNewProduct] = useState(false);
+  const [activeSection, setActiveSection] = useState(() => load(STORAGE_KEYS.adminSection, 'resumen'));
   
-  // Persist selected barber
   useEffect(() => {
     save(STORAGE_KEYS.selectedBarber, selectedBarber);
   }, [selectedBarber]);
@@ -67,7 +67,6 @@ function AdminCashRegister({ onSignOut }) {
     if (!barbers.includes(selectedBarber)) setSelectedBarber(barbers[0]);
   }, [barbers, selectedBarber]);
 
-  // Persist haircuts
   useEffect(() => {
     save(STORAGE_KEYS.haircuts, haircuts);
   }, [haircuts]);
@@ -92,6 +91,9 @@ function AdminCashRegister({ onSignOut }) {
   useEffect(() => {
     save(STORAGE_KEYS.nextOpeningBalance, nextOpeningBalance);
   }, [nextOpeningBalance]);
+  useEffect(() => {
+    save(STORAGE_KEYS.adminSection, activeSection);
+  }, [activeSection]);
 
   const addHaircut = () => {
     if (selectedService && price && date) {
@@ -191,15 +193,12 @@ function AdminCashRegister({ onSignOut }) {
   const generatePDF = () => {
     const doc = new jsPDF();
     
-    // Header
     doc.setFontSize(20);
     doc.text('Informe Diario - Barbería', 20, 20);
     
-    // Date
     doc.setFontSize(12);
     doc.text(`Fecha: ${new Date().toLocaleDateString('es-CO')}`, 20, 35);
     
-    // Group haircuts by barber
     const haircutsByBarber = {};
     barbers.forEach(barber => {
       haircutsByBarber[barber] = haircuts.filter(h => h.barber === barber);
@@ -230,11 +229,9 @@ function AdminCashRegister({ onSignOut }) {
       }
     });
     
-    // Grand total
     doc.setFontSize(16);
     doc.text(`Total Diario: $${grandTotal.toLocaleString('es-CO')}`, 20, yPosition + 10);
     
-    // Save the PDF
     doc.save(`informe-barberia-${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
@@ -460,23 +457,74 @@ function AdminCashRegister({ onSignOut }) {
         </div>
       </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="flex justify-center mb-8">
+          <div className="relative flex items-center p-1.5 rounded-full bg-black/20 backdrop-blur-sm border border-brand-gold/15 shadow-inner overflow-x-auto">
+            {[
+              { id: 'resumen', label: 'Resumen', icon: '📊' },
+              { id: 'caja', label: 'Caja', icon: '💰' },
+              { id: 'citas', label: 'Citas', icon: '📅' },
+              { id: 'cortes', label: 'Cortes', icon: '✂️' },
+              { id: 'productos', label: 'Productos', icon: '📦' },
+              { id: 'gastos', label: 'Gastos', icon: '📋' },
+            ].map((s, index) => {
+              const active = activeSection === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    setActiveSection(s.id);
+                  }}
+                  className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    active ? 'text-brand-black' : 'text-gray-300 hover:text-brand-gold'
+                  } sm:w-28 sm:justify-center`}
+                >
+                  <span className="text-base">{s.icon}</span>
+                  <span className="hidden sm:inline">{s.label}</span>
+                </button>
+              );
+            })}
+            <div
+              className="absolute h-full rounded-full bg-brand-gold/90 shadow-md transition-all duration-300 ease-out"
+              style={{
+                width: 'calc(100% / 6)',
+                left: `${
+                  ['resumen', 'caja', 'citas', 'cortes', 'productos', 'gastos'].indexOf(activeSection) * (100 / 6)
+                }%`,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {activeSection === 'resumen' || activeSection === 'caja' ? (
       <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="grid gap-6">
+          {activeSection === 'resumen' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="rounded-2xl border border-brand-gold/30 bg-black/30 backdrop-blur-sm p-5 shadow-lg">
-              <div className="text-xs uppercase tracking-wider text-gray-300 mb-2">Total Diario</div>
-              <div className="text-2xl sm:text-3xl font-bold text-brand-gold drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]">
+            <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-brand-gold text-xl">💰</span>
+                <span className="text-xs uppercase tracking-wider text-gray-300 font-semibold">Total Diario</span>
+              </div>
+              <div className="text-3xl sm:text-4xl font-extrabold text-brand-gold tracking-tight drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]">
                 ${(getDailyTotal() + getProductsTotal()).toLocaleString('es-CO')}
               </div>
             </div>
-            <div className="rounded-2xl border border-brand-gold/20 bg-black/20 backdrop-blur-sm p-5 shadow-md">
-              <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">Ganancia Mensual</div>
-              <div className="text-xl sm:text-2xl font-semibold text-brand-gold">
+            <div className="rounded-3xl border border-brand-gold/20 bg-gradient-to-br from-black/20 to-black/5 backdrop-blur-xl p-6 shadow-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-brand-gold text-xl">📈</span>
+                <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Ganancia Mensual</span>
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-brand-gold tracking-tight drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]">
                 ${getMonthlyProfit().toLocaleString('es-CO')}
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
+          ) : null}
+          {activeSection === 'caja' ? (
+          <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Saldo Inicial</label>
@@ -510,8 +558,11 @@ function AdminCashRegister({ onSignOut }) {
               </div>
             </div>
             <div className="mt-6 text-center">
-              <div className="text-xs uppercase tracking-wider text-gray-400 mb-1">Caja</div>
-              <div className="text-3xl sm:text-4xl font-bold text-brand-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="text-brand-gold text-xl">🧾</span>
+                <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Caja</span>
+              </div>
+              <div className="text-3xl sm:text-4xl font-extrabold text-brand-gold tracking-tight drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]">
                 ${getCashTotal().toLocaleString('es-CO')}
               </div>
             </div>
@@ -544,13 +595,24 @@ function AdminCashRegister({ onSignOut }) {
               </div>
             </div>
           </div>
+          ) : null}
         </div>
       </header>
+      ) : null}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {supabase ? <AdminAppointmentsPanel /> : null}
+        {activeSection === 'citas' ? (
+          supabase ? (
+            <AdminAppointmentsPanel />
+          ) : (
+            <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10"> mb-8 text-gray-300">
+              Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar citas.
+            </div>
+          )
+        ) : null}
         <div className="grid grid-cols-1 gap-8 mb-8">
-          <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
+          {activeSection === 'cortes' ? (
+          <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-brand-gold text-xl">✂️</span>
               <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Nuevo Corte</h2>
@@ -628,8 +690,10 @@ function AdminCashRegister({ onSignOut }) {
             </div>
           </div>
         </div>
+          ) : null}
 
-        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
+        {activeSection === 'productos' ? (
+        <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-brand-gold text-xl">📦</span>
             <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agregar Producto Vendido</h2>
@@ -807,9 +871,11 @@ function AdminCashRegister({ onSignOut }) {
             </div>
           </div>
         </div>
+        ) : null}
         </div>
 
-        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg mb-8">
+        {activeSection === 'gastos' ? (
+        <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10"> mb-8">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-brand-gold text-xl">📋</span>
             <h2 className="text-2xl font-semibold font-serif text-brand-gold">Registrar Gasto Interno</h2>
@@ -859,19 +925,33 @@ function AdminCashRegister({ onSignOut }) {
             </div>
           </div>
         </div>
+        ) : null}
 
+        {activeSection === 'resumen' ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {barbers.map(barber => (
-            <div key={barber} className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
-              <h3 className="text-lg font-semibold text-brand-gold mb-2">{barber}</h3>
-              <p className="text-2xl font-bold text-brand-gold drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]">${getBarberTotal(barber).toLocaleString('es-CO')}</p>
-              <p className="text-sm text-gray-400">
-                {haircuts.filter(h => h.barber === barber).length} cortes
+            <div key={barber} className="rounded-3xl border border-brand-gold/20 bg-gradient-to-br from-black/25 to-black/10 backdrop-blur-xl p-6 shadow-xl hover:shadow-2xl hover:shadow-brand-gold/10 transition-all duration-300">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-gold/20 to-brand-gold/5 flex items-center justify-center border border-brand-gold/30">
+                  <span className="text-2xl">👤</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-brand-gold">{barber}</h3>
+                  <p className="text-sm text-gray-400 flex items-center gap-1">
+                    <span className="text-brand-gold">✂️</span>
+                    {haircuts.filter(h => h.barber === barber).length} cortes
+                  </p>
+                </div>
+              </div>
+              <p className="text-3xl font-extrabold text-brand-gold tracking-tight drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]">
+                ${getBarberTotal(barber).toLocaleString('es-CO')}
               </p>
             </div>
           ))}
         </div>
+        ) : null}
 
+        {activeSection === 'cortes' ? (
         <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm shadow-lg mb-8">
           <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-brand-gold">Cortes de Hoy</h2>
@@ -903,7 +983,9 @@ function AdminCashRegister({ onSignOut }) {
             </div>
           )}
         </div>
+        ) : null}
 
+        {activeSection === 'productos' ? (
         <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm shadow-lg mb-8">
           <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-brand-gold">Productos Vendidos</h2>
@@ -936,7 +1018,9 @@ function AdminCashRegister({ onSignOut }) {
             </div>
           )}
         </div>
+        ) : null}
 
+        {activeSection === 'gastos' ? (
         <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm shadow-lg mb-8">
           <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-brand-gold">Gastos Internos</h2>
@@ -968,6 +1052,7 @@ function AdminCashRegister({ onSignOut }) {
             </div>
           )}
         </div>
+        ) : null}
       </div>
     </div>
   );
@@ -1264,7 +1349,7 @@ function ClientBookingPage() {
         }
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg">
+        <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-brand-gold text-xl">📅</span>
             <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agendar Cita</h2>
@@ -1475,7 +1560,6 @@ function AdminGatePage() {
         if (signUpError) {
           setError(signUpError.message);
         } else if (data.session) {
-          // Auto logged in
         } else {
           setMessage('Registro exitoso. Revisa tu correo o inicia sesión.');
           setIsRegistering(false);

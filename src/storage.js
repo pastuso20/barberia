@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   expenses: 'barberia:expenses',
   nextOpeningBalance: 'barberia:nextOpeningBalance',
   productsCatalog: 'barberia:productsCatalog',
+  adminSection: 'barberia:adminSection',
 };
 
 export function load(key, defaultValue) {
@@ -23,7 +24,7 @@ export function save(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (_) {
-    // ignore quota or serialization errors
+    return;
   }
 }
 
@@ -31,6 +32,6 @@ export function remove(key) {
   try {
     localStorage.removeItem(key);
   } catch (_) {
-    // ignore
+    return;
   }
 }
