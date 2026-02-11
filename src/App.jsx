@@ -3,13 +3,13 @@ import jsPDF from 'jspdf';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { load, save, STORAGE_KEYS } from './storage';
 import { supabase } from './supabaseClient';
-import { Scissors, Mail, Lock, Shield, Calendar, User, Phone, Check } from 'lucide-react';
+import { Scissors, Mail, Lock, Shield, Calendar, User, Phone, Check, Plus, Pencil, Trash2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BARBERS = ['Hernan', 'Manuel', 'Luigui'];
 
 function AdminCashRegister({ onSignOut }) {
-  const [barbers] = useState(BARBERS);
+  const [barbers, setBarbers] = useState(() => load(STORAGE_KEYS.barbers, BARBERS));
   const [services] = useState([
     { id: 1, name: 'Corte sencillo', price: 17000 },
     { id: 2, name: 'Corte + barba', price: 22000 },
@@ -59,6 +59,10 @@ function AdminCashRegister({ onSignOut }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [showNewProduct, setShowNewProduct] = useState(false);
   const [activeSection, setActiveSection] = useState(() => load(STORAGE_KEYS.adminSection, 'resumen'));
+  const [newBarberName, setNewBarberName] = useState('');
+  const [editingBarber, setEditingBarber] = useState('');
+  const [editingName, setEditingName] = useState('');
+  const [barberError, setBarberError] = useState('');
   
   useEffect(() => {
     save(STORAGE_KEYS.selectedBarber, selectedBarber);
@@ -94,6 +98,9 @@ function AdminCashRegister({ onSignOut }) {
   useEffect(() => {
     save(STORAGE_KEYS.adminSection, activeSection);
   }, [activeSection]);
+  useEffect(() => {
+    save(STORAGE_KEYS.barbers, barbers);
+  }, [barbers]);
 
   const addHaircut = () => {
     if (selectedService && price && date) {
@@ -110,6 +117,47 @@ function AdminCashRegister({ onSignOut }) {
       setSelectedService('');
       setPrice('');
     }
+  };
+
+  const addBarber = (nameParam) => {
+    const name = (nameParam ?? newBarberName).trim();
+    if (!name) return;
+    if (barbers.some(b => b.toLowerCase() === name.toLowerCase())) {
+      setBarberError('El barbero ya existe');
+      return;
+    }
+    setBarberError('');
+    setBarbers([...barbers, name]);
+    setNewBarberName('');
+  };
+
+  const renameBarber = (oldName, newNameParam) => {
+    const name = (newNameParam ?? editingName).trim();
+    if (!name) return;
+    if (barbers.some(b => b.toLowerCase() === name.toLowerCase())) {
+      setBarberError('Ya existe ese nombre');
+      return;
+    }
+    const old = oldName ?? editingBarber;
+    const next = barbers.map(b => (b === old ? name : b));
+    setBarbers(next);
+    setHaircuts(haircuts.map(h => (h.barber === old ? { ...h, barber: name } : h)));
+    if (selectedBarber === old) setSelectedBarber(name);
+    setEditingBarber('');
+    setEditingName('');
+    setBarberError('');
+  };
+
+  const deleteBarber = (nameParam) => {
+    const name = nameParam ?? selectedBarber;
+    if (haircuts.some(h => h.barber === name)) {
+      setBarberError('No se puede eliminar: tiene registros');
+      return;
+    }
+    const next = barbers.filter(b => b !== name);
+    setBarbers(next);
+    if (!next.includes(selectedBarber)) setSelectedBarber(next[0] || '');
+    setBarberError('');
   };
 
   const deleteHaircut = (id) => {
@@ -928,6 +976,30 @@ function AdminCashRegister({ onSignOut }) {
         ) : null}
 
         {activeSection === 'resumen' ? (
+        <>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-brand-gold">
+            <span className="text-xl">👥</span>
+            <span className="text-sm font-semibold uppercase tracking-wider">Barberos</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={newBarberName}
+              onChange={(e) => setNewBarberName(e.target.value)}
+              placeholder="Nuevo barbero"
+              className="w-40 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+            />
+            <button
+              onClick={() => addBarber()}
+              className="flex items-center gap-1 bg-brand-gold text-brand-black px-3 py-2 rounded-xl font-bold hover:brightness-110 transition-colors"
+              title="Agregar barbero"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Agregar</span>
+            </button>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {barbers.map(barber => (
             <div key={barber} className="rounded-3xl border border-brand-gold/20 bg-gradient-to-br from-black/25 to-black/10 backdrop-blur-xl p-6 shadow-xl hover:shadow-2xl hover:shadow-brand-gold/10 transition-all duration-300">
@@ -946,9 +1018,54 @@ function AdminCashRegister({ onSignOut }) {
               <p className="text-3xl font-extrabold text-brand-gold tracking-tight drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]">
                 ${getBarberTotal(barber).toLocaleString('es-CO')}
               </p>
+              <div className="mt-4 flex items-center gap-2">
+                {editingBarber === barber ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      className="flex-1 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                    />
+                    <button
+                      onClick={() => renameBarber(barber, editingName)}
+                      className="bg-brand-gold text-brand-black px-3 py-2 rounded-xl hover:brightness-110 transition-colors"
+                      title="Confirmar"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => { setEditingBarber(''); setEditingName(''); }}
+                      className="bg-black/30 text-gray-200 px-3 py-2 rounded-xl border border-brand-gold/30 hover:bg-black/50 transition-colors"
+                      title="Cancelar"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { setEditingBarber(barber); setEditingName(barber); }}
+                      className="bg-black/30 text-brand-gold px-3 py-2 rounded-xl border border-brand-gold/40 hover:bg-black/50 transition-colors"
+                      title="Renombrar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteBarber(barber)}
+                      className="bg-black/30 text-red-300 px-3 py-2 rounded-xl border border-red-300/30 hover:bg-black/50 transition-colors"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+              {barberError ? <div className="text-red-300 text-xs mt-2">{barberError}</div> : null}
             </div>
           ))}
         </div>
+        </>
         ) : null}
 
         {activeSection === 'cortes' ? (
@@ -1262,7 +1379,11 @@ function timeLabel(d) {
 
 function ClientBookingPage() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedBarber, setSelectedBarber] = useState(BARBERS[0]);
+  const [barbers] = useState(() => load(STORAGE_KEYS.barbers, BARBERS));
+  const [selectedBarber, setSelectedBarber] = useState(() => {
+    const bs = load(STORAGE_KEYS.barbers, BARBERS);
+    return bs[0] || '';
+  });
   const [busy, setBusy] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -1306,6 +1427,9 @@ function ClientBookingPage() {
   useEffect(() => {
     if (selectedSlot && selectedSlot.toISOString().slice(0, 10) !== date) setSelectedSlot(null);
   }, [date, selectedSlot]);
+  useEffect(() => {
+    if (!barbers.includes(selectedBarber)) setSelectedBarber(barbers[0] || '');
+  }, [barbers, selectedBarber]);
 
   async function submit() {
     if (!supabase) return;
@@ -1404,7 +1528,7 @@ function ClientBookingPage() {
                       onChange={(e) => setSelectedBarber(e.target.value)}
                       className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
                     >
-                      {BARBERS.map((b) => (
+                      {barbers.map((b) => (
                         <option key={b} value={b}>
                           {b}
                         </option>

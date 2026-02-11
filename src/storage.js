@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   haircuts: 'barberia:haircuts',
   selectedBarber: 'barberia:selectedBarber',
+  barbers: 'barberia:barbers',
   productSales: 'barberia:products',
   initialBalance: 'barberia:initialBalance',
   cashFund: 'barberia:cashFund',
