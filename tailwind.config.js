@@ -8,9 +8,10 @@ export default {
     extend: {
       colors: {
         brand: {
-          black: '#0b0b0b',
-          gray: '#1f2937',
-          gold: '#d4af37'
+          black: '#0D0D0D',
+          surface: '#1A1A1A',
+          gold: '#D4AF37',
+          border: '#333333'
         }
       },
       fontFamily: {
