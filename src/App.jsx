@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { load, save, STORAGE_KEYS } from './storage';
 import { supabase } from './supabaseClient';
-import { Scissors, Mail, Lock, Shield, Calendar, User, Phone, Check, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Scissors, Mail, Lock, Shield, Calendar, User, Phone, Check, Plus, Pencil, Trash2, X, LayoutDashboard, Settings, UserCheck } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -1408,41 +1408,144 @@ function BrandHeader({ right }) {
 }
 
 function HomePage() {
+  const [selectedProfile, setSelectedProfile] = useState(null);
+
   return (
-    <div className="min-h-screen bg-brand-black">
-      <BrandHeader />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
+    <div className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex items-center justify-center">
+      {/* Fondo Inmersivo Premium */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[2000ms] scale-110 blur-[3px]"
+        style={{ backgroundImage: `url('/images/home.jpg')` }}
+      />
+      {/* Overlay de lujo con viñeta */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/90" />
+      <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]" />
+
+      <div className="relative z-10 w-full max-w-5xl px-6 py-12 flex flex-col items-center">
+        {/* Encabezado de Marca Refinado */}
+        <motion.div 
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="rounded-2xl border-[0.5px] border-brand-gold/40 bg-black/20 backdrop-blur-md p-6 shadow-lg"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex flex-col items-center mb-16"
         >
-          <h2 className="text-2xl font-semibold font-serif text-brand-gold mb-2 tracking-wider">Selecciona una interfaz</h2>
-          <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <Link
-              to="/admin"
-              className="group block border border-brand-gold/25 bg-black/25 backdrop-blur-sm rounded-2xl p-6 transition-all hover:scale-105 hover:border-brand-gold/50"
+          <div className="w-16 h-16 rounded-full border-2 border-brand-gold/30 flex items-center justify-center mb-6 bg-black/20 backdrop-blur-sm shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+            <Scissors className="w-8 h-8 text-brand-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]" strokeWidth={1.5} />
+          </div>
+          <h1 className="text-6xl md:text-7xl font-serif text-brand-gold tracking-[0.2em] font-bold uppercase drop-shadow-2xl">
+            Barbería
+          </h1>
+          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent mt-4" />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="w-full bg-black/40 backdrop-blur-xl rounded-[40px] p-8 md:p-10 border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden"
+        >
+          {/* Sutil brillo de fondo para la tarjeta */}
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+
+          <h2 className="text-lg md:text-xl font-medium text-gray-400 mb-8 text-center tracking-[0.1em] uppercase">
+            Selecciona tu perfil
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            {/* Tarjeta Perfil: Administrador */}
+            <motion.div 
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              onClick={() => setSelectedProfile('admin')}
+              className={`relative cursor-pointer group rounded-[28px] p-8 border transition-all duration-500 flex flex-col items-center justify-center aspect-square md:aspect-[1.1/1] ${
+                selectedProfile === 'admin' 
+                ? 'bg-brand-gold/[0.07] border-brand-gold shadow-[0_0_40px_rgba(212,175,55,0.15)]' 
+                : 'bg-[#111]/60 border-white/5 hover:border-brand-gold/40 hover:bg-[#151515]'
+              }`}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <Shield className="w-6 h-6 text-brand-gold" />
-                <div className="text-brand-gold font-semibold text-lg">Administrador</div>
+              <div className={`w-20 h-20 mb-6 flex items-center justify-center rounded-2xl transition-all duration-500 shadow-2xl ${
+                selectedProfile === 'admin' 
+                ? 'bg-brand-gold text-brand-black scale-110 shadow-brand-gold/20' 
+                : 'bg-[#1a1a1a] text-brand-gold group-hover:scale-105 border border-white/5 group-hover:border-brand-gold/20'
+              }`}>
+                <div className="relative">
+                  <LayoutDashboard className="w-10 h-10" strokeWidth={1.2} />
+                  <Settings className="w-5 h-5 absolute -bottom-1 -right-1 bg-inherit rounded-full p-0.5" strokeWidth={2} />
+                </div>
               </div>
-              <div className="text-gray-300 text-sm">Ingresar y gestionar caja y citas</div>
-            </Link>
-            <Link
-              to="/cliente"
-              className="group block border border-brand-gold/25 bg-black/25 backdrop-blur-sm rounded-2xl p-6 transition-all hover:scale-105 hover:border-brand-gold/50"
+              <h3 className={`text-2xl font-bold mb-3 tracking-tight transition-colors duration-500 ${selectedProfile === 'admin' ? 'text-brand-gold' : 'text-gray-200'}`}>
+                Administrador
+              </h3>
+              <p className="text-gray-500 text-xs leading-relaxed max-w-[200px] text-center font-medium">
+                Gestión experta de caja, citas y reportes estratégicos
+              </p>
+              
+              {selectedProfile === 'admin' && (
+                <motion.div layoutId="profile-check" className="absolute top-4 right-4 w-7 h-7 bg-brand-gold rounded-full flex items-center justify-center shadow-lg shadow-brand-gold/30">
+                  <Check className="w-4 h-4 text-brand-black" strokeWidth={3} />
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Tarjeta Perfil: Cliente */}
+            <motion.div 
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              onClick={() => setSelectedProfile('cliente')}
+              className={`relative cursor-pointer group rounded-[28px] p-8 border transition-all duration-500 flex flex-col items-center justify-center aspect-square md:aspect-[1.1/1] ${
+                selectedProfile === 'cliente' 
+                ? 'bg-brand-gold/[0.07] border-brand-gold shadow-[0_0_40px_rgba(212,175,55,0.15)]' 
+                : 'bg-[#111]/60 border-white/5 hover:border-brand-gold/40 hover:bg-[#151515]'
+              }`}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <Calendar className="w-6 h-6 text-brand-gold" />
-                <div className="text-brand-gold font-semibold text-lg">Cliente</div>
+              <div className={`w-20 h-20 mb-6 flex items-center justify-center rounded-2xl transition-all duration-500 shadow-2xl ${
+                selectedProfile === 'cliente' 
+                ? 'bg-brand-gold text-brand-black scale-110 shadow-brand-gold/20' 
+                : 'bg-[#1a1a1a] text-brand-gold group-hover:scale-105 border border-white/5 group-hover:border-brand-gold/20'
+              }`}>
+                <div className="relative">
+                  <Calendar className="w-10 h-10" strokeWidth={1.2} />
+                  <UserCheck className="w-5 h-5 absolute -bottom-1 -right-1 bg-inherit rounded-full p-0.5" strokeWidth={2} />
+                </div>
               </div>
-              <div className="text-gray-300 text-sm">Agendar cita y ver disponibilidad</div>
-            </Link>
+              <h3 className={`text-2xl font-bold mb-3 tracking-tight transition-colors duration-500 ${selectedProfile === 'cliente' ? 'text-brand-gold' : 'text-gray-200'}`}>
+                Cliente
+              </h3>
+              <p className="text-gray-500 text-xs leading-relaxed max-w-[200px] text-center font-medium">
+                Reserva tu estilo, consulta disponibilidad y agenda tu cita
+              </p>
+
+              {selectedProfile === 'cliente' && (
+                <motion.div layoutId="profile-check" className="absolute top-4 right-4 w-7 h-7 bg-brand-gold rounded-full flex items-center justify-center shadow-lg shadow-brand-gold/30">
+                  <Check className="w-4 h-4 text-brand-black" strokeWidth={3} />
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
+
+          <div className="flex justify-center">
+            {selectedProfile ? (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                <Link
+                  to={selectedProfile === 'admin' ? '/admin' : '/cliente'}
+                  className="bg-brand-gold text-brand-black px-12 py-4 rounded-xl font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] flex items-center gap-3 text-sm"
+                >
+                  Continuar <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                </Link>
+              </motion.div>
+            ) : (
+              <button
+                disabled
+                className="bg-white/5 text-gray-600 px-12 py-4 rounded-xl font-black uppercase tracking-[0.2em] cursor-not-allowed flex items-center gap-4 border border-white/5 text-sm"
+              >
+                Continuar <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            )}
           </div>
         </motion.div>
+        
+        <p className="mt-12 text-gray-600 text-xs tracking-[0.3em] uppercase font-bold">
+          © 2024 Barbería Premium Experience
+        </p>
       </div>
     </div>
   );
@@ -1546,159 +1649,237 @@ function ClientBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-black">
-      <BrandHeader
-        right={
-          <Link
-            to="/"
-            className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
-          >
-            Inicio
-          </Link>
-        }
+    <div className="relative min-h-screen bg-[#0a0a0a] overflow-hidden">
+      {/* Fondo Inmersivo Premium */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700 blur-[2px]"
+        style={{ backgroundImage: `url('/images/citas.jpg')` }}
       />
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-        <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-brand-gold text-xl">📅</span>
-            <h2 className="text-2xl font-semibold font-serif text-brand-gold">Agendar Cita</h2>
-          </div>
-          <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
+      {/* Overlay de lujo con viñeta */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/90" />
+      <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]" />
 
-          {!supabase ? (
-            <div className="text-gray-300">
-              Faltan variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar citas.
+      <div className="relative z-10 flex flex-col items-center min-h-screen">
+        <div className="w-full max-w-7xl mx-auto px-6 pt-12 pb-20">
+          
+          {/* Encabezado de Marca Refinado */}
+          <motion.div 
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center mb-16 relative"
+          >
+            <div className="absolute right-0 top-0">
+              <Link
+                to="/"
+                className="px-8 py-3 rounded-xl border border-brand-gold/30 text-brand-gold hover:bg-brand-gold/10 transition-all text-xs font-black uppercase tracking-[0.2em] backdrop-blur-sm"
+              >
+                Inicio
+              </Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              <div className="md:col-span-5 space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Nombre</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
-                      <User className="w-5 h-5" />
-                    </span>
-                    <input
-                      type="text"
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      placeholder="Nombre del cliente"
-                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Teléfono</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
-                      <Phone className="w-5 h-5" />
-                    </span>
-                    <input
-                      type="tel"
-                      value={clientPhone}
-                      onChange={(e) => setClientPhone(e.target.value)}
-                      placeholder="310 000 0000"
-                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Barbero</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
-                      <Scissors className="w-5 h-5" />
-                    </span>
-                    <select
-                      value={selectedBarber}
-                      onChange={(e) => setSelectedBarber(e.target.value)}
-                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
-                    >
-                      {barbers.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">Fecha</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
-                      <Calendar className="w-5 h-5" />
-                    </span>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
-                    />
-                  </div>
-                </div>
-                <div className="text-xs text-gray-400">
-                  {selectedSlot ? `Reserva con ${selectedBarber} el ${date} a las ${timeLabel(selectedSlot)}` : 'Selecciona una hora para continuar'}
-                </div>
-                {error ? <div className="text-red-300 text-sm">{error}</div> : null}
-                {success ? <div className="text-green-300 text-sm">{success}</div> : null}
-                <button
-                  onClick={submit}
-                  disabled={loading || !selectedSlot}
-                  className="w-full bg-brand-gold text-brand-black px-4 py-3 rounded-xl font-bold hover:brightness-110 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2"
-                >
-                  <span>Confirmar cita</span>
-                  <Check className="w-5 h-5" />
-                </button>
-              </div>
+            
+            <div className="w-16 h-16 rounded-full border-2 border-brand-gold/30 flex items-center justify-center mb-6 bg-black/20 backdrop-blur-sm shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+              <Scissors className="w-8 h-8 text-brand-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]" strokeWidth={1.5} />
+            </div>
+            <h1 className="text-6xl md:text-7xl font-serif text-brand-gold tracking-[0.2em] font-bold uppercase drop-shadow-2xl text-center">
+              Barbería
+            </h1>
+            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent mt-4" />
+          </motion.div>
 
-              <div className="md:col-span-7">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">Horas disponibles</div>
-                  {loading ? <div className="text-gray-300 text-xs">Cargando...</div> : null}
-                </div>
-                <div className="rounded-2xl border border-brand-gold/25 bg-black/25 backdrop-blur-sm p-4">
-                  {(() => {
-                    const all = buildSlots(date);
-                    const morning = all.filter((s) => s.getHours() < 14);
-                    const afternoon = all.filter((s) => s.getHours() >= 14);
-                    const renderGroup = (label, list) => (
-                      <div className="mb-4">
-                        <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">{label}</div>
-                        <div className="flex flex-wrap gap-2">
-                          {list.map((slot) => {
-                            const busy = busyStarts.has(slot.getTime());
-                            const active = !busy && selectedSlot && slot.getTime() === selectedSlot.getTime();
-                            const base = 'px-3 py-2 rounded-full border text-sm transition-all';
-                            const cls = busy
-                              ? 'opacity-40 text-gray-400 border-gray-700 line-through cursor-not-allowed'
-                              : active
-                              ? 'bg-brand-gold text-brand-black border-brand-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]'
-                              : 'bg-black/40 text-gray-100 border-brand-gold/25 hover:bg-black/50';
-                            return (
-                              <button
-                                key={slot.toISOString()}
-                                onClick={() => !busy && setSelectedSlot(slot)}
-                                className={`${base} ${cls}`}
-                                disabled={busy}
-                              >
-                                {timeLabel(slot)}
-                              </button>
-                            );
-                          })}
-                        </div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-6xl mx-auto"
+          >
+            <div className="bg-black/40 backdrop-blur-xl rounded-[48px] p-10 md:p-16 border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden">
+              {/* Sutil brillo de fondo para la tarjeta */}
+              <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+              <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-16">
+                
+                {/* Left Side: Form */}
+                <div className="md:col-span-5 space-y-10">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="w-12 h-12 bg-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20">
+                      <span className="text-2xl">🗓️</span>
+                    </div>
+                    <h2 className="text-3xl font-bold text-white tracking-tight">Agendar Cita</h2>
+                  </div>
+
+                  <div className="space-y-8">
+                    <div>
+                      <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4 ml-2">NOMBRE</label>
+                      <div className="relative group">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors">
+                          <User className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="text"
+                          value={clientName}
+                          onChange={(e) => setClientName(e.target.value)}
+                          placeholder="Nombre del cliente"
+                          className="w-full pl-12 pr-4 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all placeholder:text-gray-700 font-medium"
+                        />
                       </div>
-                    );
-                    return (
-                      <>
-                        {renderGroup('Mañana', morning)}
-                        {renderGroup('Tarde', afternoon)}
-                      </>
-                    );
-                  })()}
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4 ml-2">TELÉFONO</label>
+                      <div className="relative group">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors">
+                          <Phone className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="tel"
+                          value={clientPhone}
+                          onChange={(e) => setClientPhone(e.target.value)}
+                          placeholder="310 000 0000"
+                          className="w-full pl-12 pr-4 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all placeholder:text-gray-700 font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4 ml-2">BARBERO</label>
+                      <div className="relative group">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors">
+                          <Scissors className="w-5 h-5" />
+                        </span>
+                        <select
+                          value={selectedBarber}
+                          onChange={(e) => setSelectedBarber(e.target.value)}
+                          className="w-full pl-12 pr-10 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] appearance-none transition-all cursor-pointer font-medium"
+                        >
+                          {barbers.map((b) => (
+                            <option key={b} value={b} className="bg-[#0a0a0a]">
+                              {b}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4 ml-2">FECHA</label>
+                      <div className="relative group">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors">
+                          <Calendar className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="date"
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
+                          className="w-full pl-12 pr-4 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all [color-scheme:dark] cursor-pointer font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-6">
+                      <p className="text-gray-600 text-[11px] font-bold uppercase tracking-[0.1em] mb-6 text-center">Selecciona una hora para continuar</p>
+                      <button
+                        onClick={submit}
+                        disabled={loading || !selectedSlot}
+                        className="w-full bg-brand-gold text-brand-black px-4 py-6 rounded-[24px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_20px_40px_rgba(212,175,55,0.2)] flex items-center justify-center gap-4 text-base"
+                      >
+                        Confirmar cita <Check className="w-6 h-6" strokeWidth={3} />
+                      </button>
+                    </div>
+
+                    {error && <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-center py-3 rounded-xl text-xs font-bold uppercase tracking-wider animate-pulse">{error}</div>}
+                    {success && <div className="bg-green-500/10 border border-green-500/20 text-green-500 text-center py-3 rounded-xl text-xs font-bold uppercase tracking-wider">{success}</div>}
+                  </div>
                 </div>
-                <div className="text-gray-400 text-xs mt-2">Horario: 9:00 a 19:00 (citas de 30 min)</div>
+
+                {/* Right Side: Slots */}
+                <div className="md:col-span-7">
+                  <div className="flex items-center justify-between mb-10">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 ml-4">HORAS DISPONIBLES</h3>
+                    {loading && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-brand-gold rounded-full animate-ping" />
+                        <span className="text-brand-gold text-[10px] font-black tracking-widest uppercase">Actualizando</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-[#0a0a0a]/30 rounded-[40px] p-10 shadow-[inset_15px_15px_30px_#050505,inset_-15px_-15px_30px_#151515] min-h-[500px] flex flex-col">
+                    {(() => {
+                      const all = buildSlots(date);
+                      const morning = all.filter((s) => s.getHours() < 14);
+                      const afternoon = all.filter((s) => s.getHours() >= 14);
+                      
+                      const renderGroup = (label, list) => (
+                        <div className="mb-12 last:mb-0">
+                          <div className="flex items-center gap-4 mb-8">
+                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/5" />
+                            <div className="text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">{label}</div>
+                            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/5" />
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                            {list.map((slot) => {
+                              const isBusy = busyStarts.has(slot.getTime());
+                              const isSelected = !isBusy && selectedSlot && slot.getTime() === selectedSlot.getTime();
+                              
+                              let btnClass = "px-4 py-4 rounded-[20px] text-xs font-black transition-all duration-300 text-center ";
+                              if (isBusy) {
+                                btnClass += "bg-[#3d0a0a] text-red-500/50 shadow-[inset_4px_4px_8px_#1a0505,inset_-4px_-4px_8px_#5a1010] cursor-not-allowed border border-red-900/20";
+                              } else if (isSelected) {
+                                btnClass += "bg-brand-gold text-brand-black shadow-[0_10px_20px_rgba(212,175,55,0.3)] scale-105 border border-brand-gold";
+                              } else {
+                                btnClass += "bg-[#111] text-gray-400 shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#151515] hover:text-brand-gold hover:shadow-[0_0_15px_rgba(212,175,55,0.2)] active:scale-95 border border-white/5";
+                              }
+
+                              return (
+                                <button
+                                  key={slot.toISOString()}
+                                  onClick={() => !isBusy && setSelectedSlot(slot)}
+                                  className={btnClass}
+                                  disabled={isBusy}
+                                >
+                                  {timeLabel(slot).toLowerCase()}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+
+                      return (
+                        <>
+                          {renderGroup('MAÑANA', morning)}
+                          {renderGroup('TARDE', afternoon)}
+                        </>
+                    );
+                    })()}
+                  </div>
+                  <div className="mt-10 flex items-center justify-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-brand-gold" />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Seleccionado</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#111] border border-white/5" />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Disponible</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#3d0a0a] border border-red-900/20" />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ocupado</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+          </motion.div>
+          
+          <p className="mt-16 text-center text-gray-600 text-xs tracking-[0.3em] uppercase font-bold">
+            © 2024 Barbería Premium Experience
+          </p>
         </div>
       </div>
     </div>
