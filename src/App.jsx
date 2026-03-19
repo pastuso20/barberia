@@ -441,12 +441,11 @@ function AdminCashRegister({ onSignOut }) {
     }
   };
 
-  const handleServiceChange = (e) => {
-    const serviceId = e.target.value;
+  const handleServiceChange = (serviceId) => {
     setSelectedService(serviceId);
     if (serviceId) {
       const service = services.find(s => s.id === parseInt(serviceId));
-      setPrice(service.price);
+      setPrice(service ? service.price : '');
     } else {
       setPrice('');
     }
@@ -484,92 +483,102 @@ function AdminCashRegister({ onSignOut }) {
   };
 
   return (
-    <div className="relative min-h-screen bg-brand-black text-gray-300 font-sans">
+    <div className="relative min-h-screen bg-[#0a0a0a] text-gray-300 font-sans overflow-hidden">
       <AnimatePresence>
         <motion.div
           key={activeSection}
-          className="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-500"
+          className="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-700 blur-[2px] scale-105"
           style={{ backgroundImage: `url(${sectionImages[activeSection]})` }}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
         />
       </AnimatePresence>
-      <div className="absolute inset-0 w-full h-full bg-black/60 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/90" />
+      <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]" />
 
-      <div className="relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Admin Header */}
+        <div className="max-w-7xl w-full mx-auto px-6 pt-10 pb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-brand-surface border border-brand-border flex items-center justify-center text-xl text-brand-gold">
-                ✂️
+            <div className="flex items-center gap-6">
+              <div className="w-14 h-14 rounded-full border-2 border-brand-gold/30 flex items-center justify-center bg-black/20 backdrop-blur-md shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+                <Scissors className="w-7 h-7 text-brand-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]" strokeWidth={1.5} />
               </div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">
-                Barbería
-              </h1>
+              <div>
+                <h1 className="text-4xl font-serif text-brand-gold tracking-[0.15em] font-bold uppercase drop-shadow-lg">
+                  Panel Admin
+                </h1>
+                <div className="h-[1px] w-16 bg-gradient-to-r from-brand-gold/50 to-transparent mt-1" />
+              </div>
             </div>
 
             <div className="relative">
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-sm border border-brand-gold/20 flex items-center justify-center overflow-hidden hover:bg-white/10 transition focus:outline-none"
+                className="w-12 h-12 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center overflow-hidden hover:border-brand-gold/40 transition-all shadow-[6px_6px_12px_#000000,-6px_-6px_12px_#1a1a1a] active:scale-95 group"
               >
-                <span className="text-xl">👤</span>
+                <User className="w-6 h-6 text-gray-400 group-hover:text-brand-gold transition-colors" />
               </button>
 
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-brand-gray border border-brand-gold/30 rounded-lg shadow-xl z-50 py-1">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  className="absolute right-0 mt-4 w-56 bg-[#111]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 py-2 overflow-hidden"
+                >
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
                       closeCashRegister();
                     }}
                     disabled={haircuts.length === 0 && productSales.length === 0}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-black/20 hover:text-brand-gold disabled:text-gray-500 disabled:cursor-not-allowed"
+                    className="w-full text-left px-6 py-4 text-sm font-bold uppercase tracking-widest text-gray-400 hover:bg-brand-gold/10 hover:text-brand-gold disabled:opacity-20 transition-all flex items-center gap-3"
                   >
-                    Cerrar Caja
+                    <Check className="w-4 h-4" /> Cerrar Caja
                   </button>
+                  <div className="h-[1px] bg-white/5 mx-4" />
                   {onSignOut ? (
                     <button
                       onClick={() => {
                         setIsProfileMenuOpen(false);
                         onSignOut();
                       }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-black/20 hover:text-brand-gold"
+                      className="w-full text-left px-6 py-4 text-sm font-bold uppercase tracking-widest text-gray-400 hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center gap-3"
                     >
-                      Salir
+                      <X className="w-4 h-4" /> Salir
                     </button>
                   ) : null}
-                </div>
+                </motion.div>
               )}
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-          <div className="flex justify-center mb-8">
-            <div className="flex items-center p-1 rounded-full bg-brand-surface border border-brand-border">
+        {/* Navigation Tabs */}
+        <div className="max-w-7xl w-full mx-auto px-6 mb-10">
+          <div className="flex justify-center">
+            <div className="flex items-center p-1.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 shadow-[inset_6px_6px_12px_#000000,inset_-6px_-6px_12px_#1a1a1a]">
               {[
-              { id: 'resumen', label: 'Resumen' },
-              { id: 'caja', label: 'Caja' },
-              { id: 'citas', label: 'Citas' },
-              { id: 'cortes', label: 'Cortes' },
-              { id: 'productos', label: 'Productos' },
-              { id: 'gastos', label: 'Gastos' },
-              { id: 'barberos', label: 'Barberos' },
+                { id: 'resumen', label: 'Resumen' },
+                { id: 'caja', label: 'Caja' },
+                { id: 'citas', label: 'Citas' },
+                { id: 'cortes', label: 'Cortes' },
+                { id: 'productos', label: 'Productos' },
+                { id: 'gastos', label: 'Gastos' },
+                { id: 'barberos', label: 'Barberos' },
               ].map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setActiveSection(s.id)}
-                  className={`relative px-4 py-1.5 text-sm font-medium rounded-full transition-colors focus:outline-none ${
-                    activeSection === s.id ? 'text-brand-black' : 'text-gray-400 hover:text-white'
+                  className={`relative px-6 py-2.5 text-xs font-black uppercase tracking-[0.15em] rounded-xl transition-all duration-300 focus:outline-none ${
+                    activeSection === s.id ? 'text-brand-black' : 'text-gray-500 hover:text-gray-300'
                   }`}
                 >
                   {activeSection === s.id && (
                     <motion.div
-                      layoutId="active-pill"
-                      className="absolute inset-0 bg-brand-gold rounded-full"
+                      layoutId="active-nav-pill"
+                      className="absolute inset-0 bg-brand-gold rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.4)]"
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
@@ -580,680 +589,751 @@ function AdminCashRegister({ onSignOut }) {
           </div>
         </div>
 
-        {activeSection === 'resumen' || activeSection === 'caja' ? (
-        <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-          <div className="grid gap-6">
-            {activeSection === 'resumen' ? (
-            <div className="grid grid-cols-1 gap-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-brand-gold text-xl">💰</span>
-                    <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Total Diario</span>
+        <div className="max-w-7xl w-full mx-auto px-6 pb-20 overflow-y-auto">
+          {activeSection === 'resumen' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-10"
+            >
+              {/* Dashboard Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {[
+                  { label: 'Total Diario', value: (getDailyTotal() + getProductsTotal()), icon: '💰' },
+                  { label: 'Ganancia Mensual', value: getMonthlyProfit(), icon: '📈' },
+                  { label: 'Cortes de Hoy', value: haircuts.length, icon: '✂️', noCurrency: true },
+                  { label: 'Ventas Productos', value: productSales.length, icon: '📦', noCurrency: true },
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-[#111]/60 backdrop-blur-xl border border-white/5 rounded-[32px] p-8 shadow-[20px_20px_40px_rgba(0,0,0,0.4),-10px_-10px_30px_rgba(255,255,255,0.02)] flex flex-col items-center text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-brand-gold/10 flex items-center justify-center mb-4 border border-brand-gold/20">
+                      <span className="text-2xl">{item.icon}</span>
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">{item.label}</span>
+                    <div className="text-3xl font-bold text-white tracking-tight">
+                      {item.noCurrency ? item.value : `$${item.value.toLocaleString('es-CO')}`}
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold text-white tracking-tight">
-                    ${(getDailyTotal() + getProductsTotal()).toLocaleString('es-CO')}
-                  </div>
-                </div>
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-brand-gold text-xl">📈</span>
-                    <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Ganancia Mensual</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white tracking-tight">
-                    ${getMonthlyProfit().toLocaleString('es-CO')}
-                  </div>
-                </div>
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-brand-gold text-xl">✂️</span>
-                    <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Cortes de Hoy</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white tracking-tight">
-                    {haircuts.length}
-                  </div>
-                </div>
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-brand-gold text-xl">📦</span>
-                    <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Productos Vendidos</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white tracking-tight">
-                    {productSales.length}
-                  </div>
-                </div>
+                ))}
               </div>
-              <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Actividad Semanal</h3>
-                <div style={{ width: '100%', height: 300 }}>
+
+              {/* Weekly Activity Chart */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/5 rounded-[40px] p-10 shadow-[inset_10px_10px_20px_#050505,inset_-10px_-10px_20px_#151515]">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-sm font-black uppercase tracking-[0.25em] text-gray-400 ml-4">Actividad Semanal</h3>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-brand-gold shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ingresos</span>
+                  </div>
+                </div>
+                <div style={{ width: '100%', height: 350 }}>
                   <ResponsiveContainer>
-                    <BarChart data={getWeeklyActivity()} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
-                      <XAxis dataKey="name" stroke="#9CA3AF" />
-                      <YAxis stroke="#9CA3AF" />
-                      <Tooltip contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid #333333' }} />
-                      <Bar dataKey="ingresos" fill="#D4AF37" />
+                    <BarChart data={getWeeklyActivity()} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="#444" 
+                        fontSize={10} 
+                        fontWeight="bold" 
+                        tickLine={false} 
+                        axisLine={false} 
+                        dy={15}
+                      />
+                      <YAxis 
+                        stroke="#444" 
+                        fontSize={10} 
+                        fontWeight="bold" 
+                        tickLine={false} 
+                        axisLine={false} 
+                        dx={-10}
+                        tickFormatter={(v) => `$${(v/1000)}k`}
+                      />
+                      <Tooltip 
+                        cursor={{ fill: 'rgba(212,175,55,0.05)' }}
+                        contentStyle={{ 
+                          backgroundColor: '#0a0a0a', 
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '16px',
+                          boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                        }}
+                        itemStyle={{ color: '#D4AF37', fontWeight: 'bold' }}
+                      />
+                      <Bar 
+                        dataKey="ingresos" 
+                        fill="#D4AF37" 
+                        radius={[8, 8, 0, 0]} 
+                        barSize={32}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Últimos Cortes</h3>
-                  <div className="divide-y divide-brand-border">
-                    {haircuts.slice(-5).reverse().map(haircut => (
-                      <div key={haircut.id} className="py-2 flex justify-between items-center">
-                        <div>
-                          <span className="font-medium text-white">{haircut.barber}</span>
-                          <span className="text-gray-400 ml-2">- {haircut.service}</span>
+
+              {/* Recent Activity */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {[
+                  { title: 'Últimos Cortes', data: haircuts, type: 'haircut' },
+                  { title: 'Ventas Recientes', data: productSales, type: 'product' },
+                ].map((section, sIdx) => (
+                  <div key={sIdx} className="bg-[#111]/60 backdrop-blur-xl border border-white/5 rounded-[40px] p-8 shadow-[20px_20px_40px_rgba(0,0,0,0.4)]">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-gray-400 mb-8 ml-4">{section.title}</h3>
+                    <div className="space-y-4">
+                      {section.data.slice(-5).reverse().map((item, iIdx) => (
+                        <div key={iIdx} className="group p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between hover:bg-white/[0.05] transition-all">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-black/40 flex items-center justify-center text-lg border border-white/5">
+                              {section.type === 'haircut' ? '✂️' : '📦'}
+                            </div>
+                            <div>
+                              <div className="text-sm font-bold text-gray-200">
+                                {section.type === 'haircut' ? item.barber : item.product}
+                              </div>
+                              <div className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                {section.type === 'haircut' ? item.service : 'Producto'}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-black text-brand-gold">
+                              ${item.price.toLocaleString('es-CO')}
+                            </div>
+                            <div className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                              {item.date}
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-gray-300">${haircut.price.toLocaleString('es-CO')}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeSection === 'caja' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-4xl mx-auto space-y-10"
+            >
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000,-20px_-20px_60px_#2a2a2a] relative overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
+                  {[
+                    { label: 'Saldo Inicial', value: initialBalance, setter: setInitialBalance },
+                    { label: 'Fondo de Caja', value: cashFund, setter: setCashFund },
+                  ].map((field, fIdx) => (
+                    <div key={fIdx}>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">{field.label}</label>
+                      <div className="relative group">
+                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors font-bold">$</span>
+                        <input
+                          type="number"
+                          value={field.value}
+                          onChange={(e) => field.setter(e.target.value ? parseFloat(e.target.value) : 0)}
+                          className="w-full pl-12 pr-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-bold text-lg"
+                        />
                       </div>
-                    ))}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-col items-center py-10 rounded-[32px] bg-black/30 shadow-[inset_10px_10px_20px_#050505,inset_-10px_-10px_20px_#151515] mb-12">
+                  <div className="w-16 h-16 rounded-2xl bg-brand-gold/10 flex items-center justify-center mb-6 border border-brand-gold/20 shadow-lg">
+                    <LayoutDashboard className="w-8 h-8 text-brand-gold" />
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 mb-4">Total en Caja</span>
+                  <div className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                    ${getCashTotal().toLocaleString('es-CO')}
                   </div>
                 </div>
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Últimos Productos Vendidos</h3>
-                  <div className="divide-y divide-brand-border">
-                    {productSales.slice(-5).reverse().map(item => (
-                      <div key={item.id} className="py-2 flex justify-between items-center">
-                        <span className="font-medium text-white">{item.product}</span>
-                        <span className="text-gray-300">${item.price.toLocaleString('es-CO')}</span>
-                      </div>
-                    ))}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">Apertura Siguiente Día</label>
+                    <div className="relative group">
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors font-bold">$</span>
+                      <input
+                        type="number"
+                        value={nextOpeningBalance}
+                        onChange={(e) => setNextOpeningBalance(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="w-full pl-12 pr-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-bold text-lg"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-            ) : null}
-            {activeSection === 'caja' ? (
-            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Saldo Inicial</label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={initialBalance}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setInitialBalance(v ? parseFloat(v) : 0);
-                      }}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Fondo de Caja</label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={cashFund}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setCashFund(v ? parseFloat(v) : 0);
-                      }}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-brand-gold text-xl">🧾</span>
-                  <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Caja</span>
-                </div>
-                <div className="text-4xl font-bold text-white tracking-tight">
-                  ${getCashTotal().toLocaleString('es-CO')}
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Apertura Siguiente Día</label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={nextOpeningBalance}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setNextOpeningBalance(v ? parseFloat(v) : 0);
-                      }}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-end">
                   <button
                     onClick={() => {
                       setInitialBalance(nextOpeningBalance || 0);
                       setNextOpeningBalance(0);
                     }}
-                    className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-md font-bold hover:brightness-110 transition-colors"
+                    className="w-full bg-brand-gold text-brand-black px-8 py-5 rounded-[20px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] flex items-center justify-center gap-3 text-sm h-[68px]"
                   >
-                    Aplicar Apertura
+                    Aplicar Apertura <Check className="w-5 h-5" strokeWidth={3} />
                   </button>
                 </div>
               </div>
-            </div>
-            ) : null}
-          </div>
-        </header>
-        ) : null}
+            </motion.div>
+          )}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {activeSection === 'citas' ? (
-            supabase ? (
-              <AdminAppointmentsPanel />
-            ) : (
-              <div className="rounded-3xl border border-brand-gold/25 bg-gradient-to-br from-black/30 to-black/10 backdrop-blur-xl p-6 shadow-2xl shadow-brand-gold/10"> mb-8 text-gray-300">
-                Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar citas.
-              </div>
-            )
-          ) : null}
-          <div className="grid grid-cols-1 gap-8 mb-8">
-            {activeSection === 'cortes' ? (
-            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-xl font-bold text-white">Agregar Nuevo Corte</h2>
-              </div>
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Barbero</label>
-                <select
-                  value={selectedBarber}
-                  onChange={(e) => setSelectedBarber(e.target.value)}
-                  className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                >
-                  {barbers.map(barber => (
-                    <option key={barber} value={barber}>{barber}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Servicio</label>
-                <select
-                  value={selectedService}
-                  onChange={handleServiceChange}
-                  className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                >
-                  <option value="">Seleccionar servicio</option>
-                  {services.map(service => (
-                    <option key={service.id} value={service.id}>{service.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">$ Precio</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="25000"
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                    readOnly
-                  />
+          {activeSection === 'citas' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {supabase ? (
+                <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-8 md:p-12 shadow-[20px_20px_60px_#000000] overflow-hidden">
+                  <AdminAppointmentsPanel />
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">📅 Fecha</label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Tipo de Pago</label>
-                <select
-                  value={paymentType}
-                  onChange={(e) => setPaymentType(e.target.value)}
-                  className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                >
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Transferencia">Transferencia</option>
-                  <option value="Tarjeta">Tarjeta</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-transparent mb-1">Acción</label>
-                <button
-                  onClick={addHaircut}
-                  className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-md font-bold hover:brightness-110 transition-colors"
-                >
-                  Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-            ) : null}
+              ) : (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-10 text-center">
+                  <p className="text-red-500 font-black uppercase tracking-[0.2em] text-sm mb-4">Configuración Requerida</p>
+                  <p className="text-gray-400 text-sm">Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para habilitar el panel de citas.</p>
+                </div>
+              )}
+            </motion.div>
+          )}
 
-          {activeSection === 'productos' ? (
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-xl font-bold text-white">Agregar Producto Vendido</h2>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-8">
-                <div className="mb-2 text-xs uppercase font-medium text-gray-400/60">Productos</div>
-                <div
-                  className="h-[420px] overflow-auto rounded-md border border-brand-border bg-brand-black/50"
-                  style={{ scrollbarWidth: 'thin' }}
-                >
-                  <table className="min-w-full text-sm">
-                    <thead className="sticky top-0 bg-brand-surface/80 backdrop-blur-sm border-b border-brand-border">
-                      <tr className="text-left text-gray-400">
-                        <th className="px-3 py-2 w-12">✔</th>
-                        <th className="px-3 py-2">Producto</th>
-                        <th className="px-3 py-2 w-28">Precio</th>
-                        <th className="px-3 py-2 w-24"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-border">
-                      {products.map((product) => (
-                        <tr key={product.id} className="group hover:bg-brand-black/50">
-                          <td className="px-3 py-3">
-                            <input
-                              type="checkbox"
-                              checked={selectedProducts.includes(String(product.id))}
-                              onChange={() => handleProductToggle(product.id)}
-                              className="h-5 w-5 accent-brand-gold bg-transparent"
-                              aria-label={`Seleccionar ${product.name}`}
-                            />
-                          </td>
-                          <td className="px-3 py-3 text-white">
-                            {editingProductId === product.id ? (
-                              <input
-                                type="text"
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                              />
-                            ) : (
-                              product.name
-                            )}
-                          </td>
-                          <td className="px-3 py-3 text-gray-300">
-                            {editingProductId === product.id ? (
-                              <input
-                                type="number"
-                                value={editPrice}
-                                onChange={(e) => setEditPrice(e.target.value)}
-                                className="w-28 px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                              />
-                            ) : (
-                              `$${product.price.toLocaleString('es-CO')}`
-                            )}
-                          </td>
-                          <td className="px-3 py-3">
-                            {editingProductId === product.id ? (
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={saveEditProduct}
-                                  className="text-brand-gold hover:brightness-110 transition-colors"
-                                  aria-label="Guardar"
-                                >
-                                  Guardar
-                                </button>
-                                <button
-                                  onClick={cancelEditProduct}
-                                  className="text-gray-500 hover:text-gray-300 transition-colors"
-                                  aria-label="Cancelar"
-                                >
-                                  Cancelar
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => startEditProduct(product.id)}
-                                  className="text-gray-400 hover:text-white transition-colors"
-                                  aria-label="Editar"
-                                  title="Editar"
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => deleteProduct(product.id)}
-                                  className="text-gray-400 hover:text-red-500 transition-colors"
-                                  aria-label="Eliminar"
-                                  title="Eliminar"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {activeSection === 'cortes' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-12"
+            >
+              {/* Form: Add Haircut */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000] relative overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+                <div className="flex items-center gap-4 mb-12">
+                  <div className="w-12 h-12 bg-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20">
+                    <span className="text-2xl">✂️</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-white tracking-tight">Agregar Nuevo Corte</h2>
                 </div>
-                <div className="mt-4 border-t border-brand-border pt-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-12">
+                  {[
+                    { label: 'Barbero', type: 'select', value: selectedBarber, setter: setSelectedBarber, options: barbers },
+                    { label: 'Servicio', type: 'select', value: selectedService, setter: handleServiceChange, options: services.map(s => ({ id: s.id, name: s.name })) },
+                    { label: 'Precio', type: 'input', value: price, readOnly: true },
+                    { label: 'Fecha', type: 'date', value: date, setter: setDate },
+                    { label: 'Tipo de Pago', type: 'select', value: paymentType, setter: setPaymentType, options: ['Efectivo', 'Transferencia', 'Tarjeta'] },
+                  ].map((field, fIdx) => (
+                    <div key={fIdx}>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">{field.label}</label>
+                      <div className="relative group">
+                        {field.type === 'select' ? (
+                          <>
+                            <select
+                              value={field.value}
+                              onChange={(e) => field.setter(e.target.value)}
+                              className="w-full px-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] appearance-none transition-all font-bold cursor-pointer"
+                            >
+                              {field.label === 'Servicio' ? (
+                                <>
+                                  <option value="" className="bg-[#0a0a0a]">Seleccionar servicio</option>
+                                  {field.options.map(o => <option key={o.id} value={o.id} className="bg-[#0a0a0a]">{o.name}</option>)}
+                                </>
+                              ) : (
+                                field.options.map(o => <option key={typeof o === 'string' ? o : o.id} value={typeof o === 'string' ? o : o.id} className="bg-[#0a0a0a]">{typeof o === 'string' ? o : o.name}</option>)
+                              )}
+                            </select>
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                            </span>
+                          </>
+                        ) : (
+                          <input
+                            type={field.type === 'date' ? 'date' : 'number'}
+                            value={field.value}
+                            onChange={(e) => field.setter && field.setter(e.target.value)}
+                            readOnly={field.readOnly}
+                            className={`w-full px-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-bold ${field.readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${field.type === 'date' ? '[color-scheme:dark]' : ''}`}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
                   <button
-                    onClick={() => setShowNewProduct(!showNewProduct)}
-                    className="w-full flex items-center justify-between text-gray-400 hover:text-white"
+                    onClick={addHaircut}
+                    className="w-full md:w-64 bg-brand-gold text-brand-black px-12 py-5 rounded-[24px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] flex items-center justify-center gap-4 text-sm"
                   >
-                    <span className="text-sm font-medium">¿No encuentras el producto? Créalo aquí</span>
-                    <span className="text-gray-400">{showNewProduct ? '▾' : '▸'}</span>
+                    Agregar Corte <Plus className="w-5 h-5" strokeWidth={3} />
                   </button>
-                  {showNewProduct ? (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <input
-                        type="text"
-                        value={newProductName}
-                        onChange={(e) => setNewProductName(e.target.value)}
-                        placeholder="Nombre"
-                        className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                      />
-                      <input
-                        type="number"
-                        value={newProductPrice}
-                        onChange={(e) => setNewProductPrice(e.target.value)}
-                        placeholder="Precio"
-                        className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                      />
-                      <button
-                        onClick={addProduct}
-                        className="w-full bg-brand-gold text-brand-black px-3 py-2 rounded-md font-bold hover:brightness-110 transition-colors"
-                      >
-                        Crear Producto
-                      </button>
-                    </div>
-                  ) : null}
                 </div>
               </div>
 
-              <div className="lg:col-span-4">
-                <div className="bg-brand-surface/50 border border-brand-border rounded-lg p-6 backdrop-blur-sm">
-                  <div className="text-xs uppercase font-medium text-gray-400/60 mb-2">Resumen de Venta</div>
-                  <div className="text-5xl font-bold text-white mb-4">
-                    ${Number(productPrice || 0).toLocaleString('es-CO')}
+              {/* List: Haircuts Today */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000] relative overflow-hidden">
+                <div className="flex items-center justify-between mb-12">
+                  <h2 className="text-3xl font-bold text-white tracking-tight">Cortes de Hoy</h2>
+                  <div className="px-6 py-3 rounded-2xl bg-brand-gold/5 border border-brand-gold/20 text-brand-gold font-black uppercase tracking-widest text-xs">
+                    Total: ${getDailyTotal().toLocaleString('es-CO')}
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">📅 Fecha</label>
-                      <input
-                        type="date"
-                        value={productDate}
-                        onChange={(e) => setProductDate(e.target.value)}
-                        className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Tipo de Pago</label>
-                      <select
-                        value={productPaymentType}
-                        onChange={(e) => setProductPaymentType(e.target.value)}
-                        className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                      >
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                      </select>
-                    </div>
+                </div>
+
+                {haircuts.length === 0 ? (
+                  <div className="py-20 text-center rounded-[32px] bg-black/20 shadow-inner border border-white/5">
+                    <p className="text-gray-600 font-bold uppercase tracking-[0.3em] text-sm">No hay registros aún</p>
                   </div>
-                  <div className="mt-6">
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {haircuts.map(haircut => (
+                      <div key={haircut.id} className="group relative p-8 rounded-[32px] bg-[#1a1a1a]/60 border border-white/5 hover:border-brand-gold/30 transition-all duration-500 shadow-xl">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="w-12 h-12 rounded-2xl bg-black/40 flex items-center justify-center text-xl border border-white/5 group-hover:border-brand-gold/20 transition-all">
+                            👤
+                          </div>
+                          <button
+                            onClick={() => deleteHaircut(haircut.id)}
+                            className="w-10 h-10 rounded-xl bg-red-500/5 text-red-500/50 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="space-y-1 mb-6">
+                          <div className="text-xl font-bold text-white">{haircut.barber}</div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-gold/80">{haircut.service}</div>
+                        </div>
+                        <div className="h-[1px] w-full bg-white/5 mb-6" />
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">{haircut.date}</div>
+                            <div className="px-3 py-1 rounded-full bg-black/40 border border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-500">{haircut.payment}</div>
+                          </div>
+                          <div className="text-2xl font-black text-white tracking-tighter">
+                            ${haircut.price.toLocaleString('es-CO')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {activeSection === 'productos' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-12"
+            >
+              {/* Form: Add Product Sale */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20_60px_#000000] relative overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+                <div className="flex items-center gap-4 mb-12">
+                  <div className="w-12 h-12 bg-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20">
+                    <span className="text-2xl">📦</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-white tracking-tight">Agregar Venta de Producto</h2>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                  {/* Left: Product Selection Table */}
+                  <div className="lg:col-span-7 space-y-8">
+                    <div className="bg-[#0a0a0a]/50 rounded-[32px] border border-white/5 shadow-inner overflow-hidden">
+                      <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-brand-gold/20 scrollbar-track-transparent">
+                        <table className="w-full text-left">
+                          <thead className="sticky top-0 bg-[#111] z-10 border-b border-white/10">
+                            <tr>
+                              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-500">✔</th>
+                              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-500">Producto</th>
+                              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-500 text-right">Precio</th>
+                              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {products.map((product) => (
+                              <tr key={product.id} className="group hover:bg-white/[0.02] transition-all duration-300">
+                                <td className="px-8 py-6">
+                                  <div 
+                                    onClick={() => handleProductToggle(product.id)}
+                                    className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer ${
+                                      selectedProducts.includes(String(product.id))
+                                      ? 'bg-brand-gold border-brand-gold'
+                                      : 'bg-transparent border-white/10 group-hover:border-brand-gold/30'
+                                    }`}
+                                  >
+                                    {selectedProducts.includes(String(product.id)) && <Check className="w-4 h-4 text-brand-black" strokeWidth={4} />}
+                                  </div>
+                                </td>
+                                <td className="px-8 py-6 font-bold text-gray-200">
+                                  {editingProductId === product.id ? (
+                                    <input
+                                      type="text"
+                                      value={editName}
+                                      onChange={(e) => setEditName(e.target.value)}
+                                      className="w-full px-4 py-2 bg-black border border-brand-gold/30 rounded-xl text-sm focus:outline-none"
+                                    />
+                                  ) : product.name}
+                                </td>
+                                <td className="px-8 py-6 text-right font-black text-brand-gold/80">
+                                  {editingProductId === product.id ? (
+                                    <input
+                                      type="number"
+                                      value={editPrice}
+                                      onChange={(e) => setEditPrice(e.target.value)}
+                                      className="w-24 px-4 py-2 bg-black border border-brand-gold/30 rounded-xl text-sm focus:outline-none text-right"
+                                    />
+                                  ) : `$${product.price.toLocaleString('es-CO')}`}
+                                </td>
+                                <td className="px-8 py-6">
+                                  <div className="flex items-center justify-center gap-3">
+                                    {editingProductId === product.id ? (
+                                      <>
+                                        <button onClick={saveEditProduct} className="p-2 text-green-500 hover:bg-green-500/10 rounded-lg"><Check className="w-4 h-4" /></button>
+                                        <button onClick={cancelEditProduct} className="p-2 text-gray-500 hover:bg-gray-500/10 rounded-lg"><X className="w-4 h-4" /></button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button onClick={() => startEditProduct(product.id)} className="p-2 text-gray-500 hover:text-brand-gold hover:bg-brand-gold/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"><Pencil className="w-4 h-4" /></button>
+                                        <button onClick={() => deleteProduct(product.id)} className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"><Trash2 className="w-4 h-4" /></button>
+                                      </>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
                     <button
-                      onClick={addProductSale}
-                      className="w-full bg-brand-gold text-brand-black px-5 py-3 rounded-md font-bold hover:brightness-110 transition-colors shadow-lg shadow-brand-gold/20"
+                      onClick={() => setShowNewProduct(!showNewProduct)}
+                      className="w-full py-4 rounded-2xl bg-[#111] border border-white/5 text-gray-500 font-bold uppercase tracking-widest text-[10px] hover:text-brand-gold transition-all flex items-center justify-center gap-3"
                     >
-                      Confirmar Venta
+                      {showNewProduct ? 'Cerrar catálogo' : '¿No encuentras un producto? Crear nuevo'}
+                    </button>
+
+                    {showNewProduct && (
+                      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8 bg-black/40 rounded-[32px] border border-white/5 shadow-inner">
+                        <input
+                          type="text"
+                          value={newProductName}
+                          onChange={(e) => setNewProductName(e.target.value)}
+                          placeholder="Nombre"
+                          className="w-full px-5 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 transition-all"
+                        />
+                        <input
+                          type="number"
+                          value={newProductPrice}
+                          onChange={(e) => setNewProductPrice(e.target.value)}
+                          placeholder="Precio"
+                          className="w-full px-5 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 transition-all"
+                        />
+                        <button
+                          onClick={addProduct}
+                          className="bg-brand-gold text-brand-black px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:brightness-110 active:scale-95 transition-all"
+                        >
+                          Crear Producto
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Right: Summary & Confirm */}
+                  <div className="lg:col-span-5">
+                    <div className="bg-[#1a1a1a]/60 backdrop-blur-md rounded-[40px] p-10 border border-brand-gold/20 shadow-2xl sticky top-10">
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 block text-center">Resumen de Venta</span>
+                      <div className="text-center mb-10">
+                        <div className="text-5xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                          ${Number(productPrice || 0).toLocaleString('es-CO')}
+                        </div>
+                        <div className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] mt-2">
+                          {selectedProducts.length} {selectedProducts.length === 1 ? 'Producto seleccionado' : 'Productos seleccionados'}
+                        </div>
+                      </div>
+
+                      <div className="space-y-8 mb-10">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">Fecha</label>
+                          <input
+                            type="date"
+                            value={productDate}
+                            onChange={(e) => setProductDate(e.target.value)}
+                            className="w-full px-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-bold [color-scheme:dark]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">Tipo de Pago</label>
+                          <div className="relative">
+                            <select
+                              value={productPaymentType}
+                              onChange={(e) => setProductPaymentType(e.target.value)}
+                              className="w-full px-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] appearance-none transition-all font-bold cursor-pointer"
+                            >
+                              <option value="Efectivo" className="bg-[#0a0a0a]">Efectivo</option>
+                              <option value="Transferencia" className="bg-[#0a0a0a]">Transferencia</option>
+                              <option value="Tarjeta" className="bg-[#0a0a0a]">Tarjeta</option>
+                            </select>
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={addProductSale}
+                        disabled={selectedProducts.length === 0}
+                        className="w-full bg-brand-gold text-brand-black px-12 py-6 rounded-[24px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-4 text-sm"
+                      >
+                        Confirmar Venta <Check className="w-5 h-5" strokeWidth={3} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* List: Product Sales Today */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000] relative overflow-hidden">
+                <div className="flex items-center justify-between mb-12">
+                  <h2 className="text-3xl font-bold text-white tracking-tight">Productos Vendidos</h2>
+                  <div className="px-6 py-3 rounded-2xl bg-brand-gold/5 border border-brand-gold/20 text-brand-gold font-black uppercase tracking-widest text-xs">
+                    Total: ${getProductsTotal().toLocaleString('es-CO')}
+                  </div>
+                </div>
+
+                {productSales.length === 0 ? (
+                  <div className="py-20 text-center rounded-[32px] bg-black/20 shadow-inner border border-white/5">
+                    <p className="text-gray-600 font-bold uppercase tracking-[0.3em] text-sm">No hay registros aún</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {productSales.map(item => (
+                      <div key={item.id} className="group relative p-8 rounded-[32px] bg-[#1a1a1a]/60 border border-white/5 hover:border-brand-gold/30 transition-all duration-500 shadow-xl">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="w-12 h-12 rounded-2xl bg-black/40 flex items-center justify-center text-xl border border-white/5 group-hover:border-brand-gold/20 transition-all">
+                            📦
+                          </div>
+                          <button
+                            onClick={() => deleteProductSale(item.id)}
+                            className="w-10 h-10 rounded-xl bg-red-500/5 text-red-500/50 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="space-y-1 mb-6">
+                          <div className="text-xl font-bold text-white truncate pr-4">{item.product}</div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-gold/80">Consumo Interno</div>
+                        </div>
+                        <div className="h-[1px] w-full bg-white/5 mb-6" />
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">{item.date}</div>
+                            <div className="px-3 py-1 rounded-full bg-black/40 border border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-500">{item.payment}</div>
+                          </div>
+                          <div className="text-2xl font-black text-white tracking-tighter">
+                            ${item.price.toLocaleString('es-CO')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {activeSection === 'gastos' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-12"
+            >
+              {/* Form: Add Expense */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000] relative overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+                <div className="flex items-center gap-4 mb-12">
+                  <div className="w-12 h-12 bg-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20">
+                    <span className="text-2xl">💸</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-white tracking-tight">Registrar Gasto Interno</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+                  {[
+                    { label: 'Concepto', type: 'text', value: expenseName, setter: setExpenseName, placeholder: 'Compra de insumos' },
+                    { label: 'Monto', type: 'number', value: expenseAmount, setter: setExpenseAmount, placeholder: '0' },
+                    { label: 'Fecha', type: 'date', value: expenseDate, setter: setExpenseDate },
+                  ].map((field, fIdx) => (
+                    <div key={fIdx}>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">{field.label}</label>
+                      <div className="relative group">
+                        <input
+                          type={field.type}
+                          value={field.value}
+                          onChange={(e) => field.setter(e.target.value)}
+                          placeholder={field.placeholder}
+                          className="w-full px-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-bold placeholder:text-gray-700 [color-scheme:dark]"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={addExpense}
+                    className="w-full md:w-64 bg-brand-gold text-brand-black px-12 py-5 rounded-[24px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] flex items-center justify-center gap-4 text-sm"
+                  >
+                    Registrar Gasto <Plus className="w-5 h-5" strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
+
+              {/* List: Expenses */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000] relative overflow-hidden">
+                <div className="flex items-center justify-between mb-12">
+                  <h2 className="text-3xl font-bold text-white tracking-tight">Gastos Internos</h2>
+                  <div className="px-6 py-3 rounded-2xl bg-brand-gold/5 border border-brand-gold/20 text-brand-gold font-black uppercase tracking-widest text-xs">
+                    Total: ${getExpensesTotal().toLocaleString('es-CO')}
+                  </div>
+                </div>
+
+                {expenses.length === 0 ? (
+                  <div className="py-20 text-center rounded-[32px] bg-black/20 shadow-inner border border-white/5">
+                    <p className="text-gray-600 font-bold uppercase tracking-[0.3em] text-sm">No hay registros aún</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {expenses.map(exp => (
+                      <div key={exp.id} className="group relative p-8 rounded-[32px] bg-[#1a1a1a]/60 border border-white/5 hover:border-brand-gold/30 transition-all duration-500 shadow-xl">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="w-12 h-12 rounded-2xl bg-black/40 flex items-center justify-center text-xl border border-white/5 group-hover:border-brand-gold/20 transition-all">
+                            📉
+                          </div>
+                          <button
+                            onClick={() => deleteExpense(exp.id)}
+                            className="w-10 h-10 rounded-xl bg-red-500/5 text-red-500/50 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="space-y-1 mb-6">
+                          <div className="text-xl font-bold text-white truncate pr-4">{exp.name}</div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">Egreso Administrativo</div>
+                        </div>
+                        <div className="h-[1px] w-full bg-white/5 mb-6" />
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">{exp.date}</div>
+                          </div>
+                          <div className="text-2xl font-black text-red-500 tracking-tighter">
+                            -${exp.amount.toLocaleString('es-CO')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {activeSection === 'barberos' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-12"
+            >
+              {/* Form: Add Barber */}
+              <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000] relative overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+                <div className="flex items-center gap-4 mb-12">
+                  <div className="w-12 h-12 bg-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20">
+                    <span className="text-2xl">👥</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-white tracking-tight">Gestionar Barberos</h2>
+                </div>
+
+                <div className="max-w-xl mx-auto">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">Nuevo Barbero</label>
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <input
+                      type="text"
+                      value={newBarberName}
+                      onChange={(e) => setNewBarberName(e.target.value)}
+                      placeholder="Nombre del barbero"
+                      className="flex-1 px-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-bold placeholder:text-gray-700"
+                    />
+                    <button
+                      onClick={() => addBarber()}
+                      className="bg-brand-gold text-brand-black px-10 py-5 rounded-[20px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] flex items-center justify-center gap-3 text-sm"
+                    >
+                      Añadir <Plus className="w-5 h-5" strokeWidth={3} />
                     </button>
                   </div>
+                  {barberError && <p className="mt-4 text-red-500 text-xs font-bold uppercase tracking-wider text-center">{barberError}</p>}
                 </div>
               </div>
-            </div>
-          </div>
-          ) : null}
-          </div>
 
-          {activeSection === 'gastos' ? (
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-xl font-bold text-white">Registrar Gasto Interno</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">Concepto</label>
-                <input
-                  type="text"
-                  value={expenseName}
-                  onChange={(e) => setExpenseName(e.target.value)}
-                  placeholder="Compra de insumos"
-                  className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">$ Monto</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={expenseAmount}
-                    onChange={(e) => setExpenseAmount(e.target.value)}
-                    placeholder="0"
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-gray-400/60 mb-1">📅 Fecha</label>
-                <input
-                  type="date"
-                  value={expenseDate}
-                  onChange={(e) => setExpenseDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium uppercase text-transparent mb-1">Acción</label>
-                <button
-                  onClick={addExpense}
-                  className="w-full bg-brand-gold text-brand-black px-4 py-2 rounded-md font-bold hover:brightness-110 transition-colors"
-                >
-                  + Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-          ) : null}
+              {/* List: Barbers */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {barbers.map(barber => (
+                  <div key={barber} className="group relative p-10 rounded-[48px] bg-[#111]/60 backdrop-blur-xl border border-white/5 hover:border-brand-gold/30 transition-all duration-500 shadow-[20px_20px_40px_rgba(0,0,0,0.4)]">
+                    <div className="flex flex-col items-center">
+                      <div className="w-24 h-24 rounded-[32px] bg-black/40 flex items-center justify-center text-4xl mb-6 border border-white/5 group-hover:border-brand-gold/20 transition-all shadow-2xl">
+                        👤
+                      </div>
+                      <h3 className="text-2xl font-black text-white mb-2 tracking-tight group-hover:text-brand-gold transition-colors">{barber}</h3>
+                      <div className="px-4 py-1.5 rounded-full bg-brand-gold/5 border border-brand-gold/10 text-[9px] font-black uppercase tracking-[0.2em] text-brand-gold/80 mb-8">
+                        {haircuts.filter(h => h.barber === barber).length} Cortes realizados
+                      </div>
+                      
+                      <div className="text-4xl font-black text-white tracking-tighter mb-8 drop-shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+                        ${getBarberTotal(barber).toLocaleString('es-CO')}
+                      </div>
 
-                    {activeSection === 'barberos' ? (
-          <>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-brand-gold">
-              <span className="text-xl">👥</span>
-              <span className="text-sm font-semibold uppercase tracking-wider">Barberos</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newBarberName}
-                onChange={(e) => setNewBarberName(e.target.value)}
-                placeholder="Nuevo barbero"
-                className="w-40 px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-              />
-              <button
-                onClick={() => addBarber()}
-                className="flex items-center gap-1 bg-brand-gold text-brand-black px-3 py-2 rounded-md font-bold hover:brightness-110 transition-colors"
-                title="Agregar barbero"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Agregar</span>
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {barbers.map(barber => (
-              <div key={barber} className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-full bg-brand-black/50 flex items-center justify-center border border-brand-border">
-                    <span className="text-2xl">👤</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{barber}</h3>
-                    <p className="text-sm text-gray-400 flex items-center gap-1">
-                      <span className="text-brand-gold">✂️</span>
-                      {haircuts.filter(h => h.barber === barber).length} cortes
-                    </p>
-                  </div>
-                </div>
-                <p className="text-3xl font-bold text-white tracking-tight">
-                  ${getBarberTotal(barber).toLocaleString('es-CO')}
-                </p>
-                <div className="mt-4 flex items-center gap-2">
-                  {editingBarber === barber ? (
-                    <>
-                      <input
-                        type="text"
-                        value={editingName}
-                        onChange={(e) => setEditingName(e.target.value)}
-                        className="flex-1 px-3 py-2 bg-brand-surface border border-brand-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-                      />
-                      <button
-                        onClick={() => renameBarber(barber, editingName)}
-                        className="bg-brand-gold text-brand-black px-3 py-2 rounded-md hover:brightness-110 transition-colors"
-                        title="Confirmar"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => { setEditingBarber(''); setEditingName(''); }}
-                        className="bg-brand-surface text-gray-200 px-3 py-2 rounded-md border border-brand-border hover:bg-brand-black/50 transition-colors"
-                        title="Cancelar"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => { setEditingBarber(barber); setEditingName(barber); }}
-                        className="bg-brand-surface text-gray-400 px-3 py-2 rounded-md border border-brand-border hover:bg-brand-black/50 transition-colors"
-                        title="Renombrar"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteBarber(barber)}
-                        className="bg-brand-surface text-red-500 px-3 py-2 rounded-md border border-brand-border hover:bg-red-500/10 transition-colors"
-                        title="Eliminar"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
-                {barberError ? <div className="text-red-400 text-xs mt-2">{barberError}</div> : null}
-              </div>
-            ))}
-          </div>
-          </>
-          ) : null}
+                      <div className="w-full h-[1px] bg-white/5 mb-8" />
 
-          {activeSection === 'cortes' ? (
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-6 mb-8">
-            <div className="p-6 border-b border-brand-border flex justify-between items-center">
-              <h2 className="text-xl font-bold text-white">Cortes de Hoy</h2>
-            </div>
-            
-            {haircuts.length === 0 ? (
-              <div className="p-6 text-center text-gray-400">
-                No hay cortes registrados aún. ¡Agrega tu primer corte arriba!
-              </div>
-            ) : (
-              <div className="divide-y divide-brand-border">
-                {haircuts.map(haircut => (
-                  <div key={haircut.id} className="p-4 flex justify-between items-center hover:bg-brand-black/50">
-                    <div>
-                      <span className="font-medium text-white">{haircut.barber}</span>
-                      <span className="text-gray-300 ml-4">{haircut.service}</span>
-                      <span className="text-gray-300 ml-4">${haircut.price.toLocaleString('es-CO')}</span>
-                      <span className="text-gray-400 ml-4">{haircut.date}</span>
-                      <span className="text-gray-400 ml-4">{haircut.payment}</span>
+                      <div className="w-full grid grid-cols-2 gap-4">
+                        {editingBarber === barber ? (
+                          <div className="col-span-2 space-y-4">
+                            <input
+                              type="text"
+                              value={editingName}
+                              onChange={(e) => setEditingName(e.target.value)}
+                              className="w-full px-5 py-3 bg-black border border-brand-gold/30 rounded-xl text-sm focus:outline-none"
+                            />
+                            <div className="flex gap-2">
+                              <button onClick={() => renameBarber(barber, editingName)} className="flex-1 bg-green-500/10 text-green-500 py-3 rounded-xl hover:bg-green-500 hover:text-white transition-all"><Check className="w-4 h-4 mx-auto" /></button>
+                              <button onClick={() => { setEditingBarber(''); setEditingName(''); }} className="flex-1 bg-white/5 text-gray-500 py-3 rounded-xl hover:bg-white/10 transition-all"><X className="w-4 h-4 mx-auto" /></button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => { setEditingBarber(barber); setEditingName(barber); }}
+                              className="bg-white/5 text-gray-400 py-4 rounded-2xl border border-white/5 hover:bg-brand-gold/10 hover:text-brand-gold hover:border-brand-gold/20 transition-all flex items-center justify-center gap-2"
+                            >
+                              <Pencil className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">Editar</span>
+                            </button>
+                            <button
+                              onClick={() => deleteBarber(barber)}
+                              className="bg-red-500/5 text-red-500/50 py-4 rounded-2xl border border-red-500/10 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                            >
+                              <Trash2 className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">Borrar</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <button
-                      onClick={() => deleteHaircut(haircut.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      Eliminar
-                    </button>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-          ) : null}
-
-          {activeSection === 'productos' ? (
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-6 mb-8">
-            <div className="p-6 border-b border-brand-border flex justify-between items-center">
-              <h2 className="text-xl font-bold text-white">Productos Vendidos</h2>
-              <div className="text-lg font-bold text-white">
-                Total Productos: ${getProductsTotal().toLocaleString('es-CO')}
-              </div>
-            </div>
-            {productSales.length === 0 ? (
-              <div className="p-6 text-center text-gray-400">
-                No hay productos registrados aún.
-              </div>
-            ) : (
-              <div className="divide-y divide-brand-border">
-                {productSales.map(item => (
-                  <div key={item.id} className="p-4 flex justify-between items-center hover:bg-brand-black/50">
-                    <div>
-                      <span className="font-medium text-white">{item.product}</span>
-                      <span className="text-gray-300 ml-4">${item.price.toLocaleString('es-CO')}</span>
-                      <span className="text-gray-400 ml-4">{item.date}</span>
-                      <span className="text-gray-400 ml-4">{item.payment}</span>
-                    </div>
-                    <button
-                      onClick={() => deleteProductSale(item.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          ) : null}
-
-          {activeSection === 'gastos' ? (
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-6 mb-8">
-            <div className="p-6 border-b border-brand-border flex justify-between items-center">
-              <h2 className="text-xl font-bold text-white">Gastos Internos</h2>
-              <div className="text-lg font-bold text-white">
-                Total Gastos: ${getExpensesTotal().toLocaleString('es-CO')}
-              </div>
-            </div>
-            {expenses.length === 0 ? (
-              <div className="p-6 text-center text-gray-400">
-                No hay gastos registrados aún.
-              </div>
-            ) : (
-              <div className="divide-y divide-brand-border">
-                {expenses.map(exp => (
-                  <div key={exp.id} className="p-4 flex justify-between items-center hover:bg-brand-black/50">
-                    <div>
-                      <span className="font-medium text-white">{exp.name}</span>
-                      <span className="text-gray-300 ml-4">${exp.amount.toLocaleString('es-CO')}</span>
-                      <span className="text-gray-400 ml-4">{exp.date}</span>
-                    </div>
-                    <button
-                      onClick={() => deleteExpense(exp.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          ) : null}
+            </motion.div>
+          )}
+        </div>
+        
+        {/* Footer */}
+        <div className="max-w-7xl w-full mx-auto px-6 py-10 border-t border-white/5 text-center">
+          <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.4em]">
+            © 2024 Barbería Premium Admin Panel
+          </p>
         </div>
       </div>
     </div>
@@ -1319,93 +1399,105 @@ function AdminAppointmentsPanel() {
   }
 
   return (
-        <div className="rounded-2xl border border-brand-gold/20 bg-black/25 backdrop-blur-sm p-6 shadow-lg mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-        <div className="flex items-center gap-3">
-          <span className="text-brand-gold text-xl">📅</span>
-          <h2 className="text-2xl font-semibold font-serif text-brand-gold">Citas</h2>
+    <div className="space-y-12">
+      {/* Header & Date Selector */}
+      <div className="bg-[#111]/60 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 md:p-16 shadow-[20px_20px_60px_#000000] relative overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20">
+              <Calendar className="w-6 h-6 text-brand-gold" />
+            </div>
+            <h2 className="text-3xl font-bold text-white tracking-tight">Gestión de Citas</h2>
+          </div>
+          
+          <div className="w-full md:w-72">
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 ml-4">Filtrar por Fecha</label>
+            <div className="relative group">
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-bold [color-scheme:dark] cursor-pointer"
+              />
+            </div>
+          </div>
         </div>
-        <div className="w-full md:w-48 md:justify-self-end">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-brand-gold mb-1">Fecha</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
-          />
-        </div>
-      </div>
-      <div className="h-0.5 bg-brand-gold w-16 mb-4"></div>
-      {error ? <div className="text-red-300 text-sm mb-3">{error}</div> : null}
-      {loading ? <div className="text-gray-300 text-sm mb-3">Cargando...</div> : null}
-          <div className="rounded-xl border border-brand-gold/25 bg-black/25 backdrop-blur-sm overflow-auto">
-        <table className="min-w-full text-sm">
-              <thead className="bg-black/30 backdrop-blur-sm border-b border-brand-gold/20">
-            <tr className="text-left text-gray-300">
-              <th className="px-3 py-2 w-24">Hora</th>
-              <th className="px-3 py-2 w-40">Barbero</th>
-              <th className="px-3 py-2">Cliente</th>
-              <th className="px-3 py-2 w-32">Teléfono</th>
-              <th className="px-3 py-2 w-28"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3 py-4 text-gray-300">
-                  No hay citas para este día.
-                </td>
-              </tr>
-            ) : (
-              items.map((it) => {
-                const privateRow = Array.isArray(it.appointment_private) ? it.appointment_private[0] : it.appointment_private;
-                const when = new Date(it.start_time);
-                return (
-                  <tr key={it.id} className="hover:bg-black/20">
-                    <td className="px-3 py-2 text-gray-100">{timeLabel(when)}</td>
-                    <td className="px-3 py-2 text-gray-100">{it.barber}</td>
-                    <td className="px-3 py-2 text-gray-100">{privateRow?.client_name ?? ''}</td>
-                    <td className="px-3 py-2 text-gray-300">{privateRow?.client_phone ?? ''}</td>
-                    <td className="px-3 py-2">
-                      <button
-                        onClick={() => removeAppointment(it.id)}
-                        className="text-brand-gray hover:text-brand-gold transition-colors"
-                      >
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+
+        {error && (
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs font-bold uppercase tracking-widest text-center">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-4">
+            <div className="w-10 h-10 border-4 border-brand-gold/20 border-t-brand-gold rounded-full animate-spin" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">Sincronizando...</p>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="py-20 text-center rounded-[32px] bg-black/20 shadow-inner border border-white/5">
+            <p className="text-gray-600 font-bold uppercase tracking-[0.3em] text-sm">No hay citas para este día</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {items.map((it) => {
+              const privateRow = Array.isArray(it.appointment_private) ? it.appointment_private[0] : it.appointment_private;
+              const when = new Date(it.start_time);
+              return (
+                <div key={it.id} className="group relative p-8 rounded-[32px] bg-[#1a1a1a]/60 border border-white/5 hover:border-brand-gold/30 transition-all duration-500 shadow-xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="px-4 py-2 rounded-xl bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-sm font-black tracking-tighter">
+                      {timeLabel(when).toLowerCase()}
+                    </div>
+                    <button
+                      onClick={() => removeAppointment(it.id)}
+                      className="w-10 h-10 rounded-xl bg-red-500/5 text-red-500/50 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-4 mb-8">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600 mb-1">Barbero</div>
+                      <div className="text-lg font-bold text-white flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-brand-gold shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+                        {it.barber}
+                      </div>
+                    </div>
+                    
+                    <div className="h-[1px] w-full bg-white/5" />
+                    
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center text-lg">
+                        👤
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-200">{privateRow?.client_name ?? 'Sin nombre'}</div>
+                        <div className="text-[10px] font-bold text-gray-500 flex items-center gap-1 mt-1">
+                          <Phone className="w-3 h-3" /> {privateRow?.client_phone ?? 'Sin teléfono'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <div className="px-3 py-1 rounded-full bg-black/40 border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">
+                      Cita Agendada
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function BrandHeader({ right }) {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div className="flex flex-col items-center gap-3 md:flex-1">
-          <div className="w-14 h-14 rounded-full bg-black/25 backdrop-blur-sm border-[0.5px] border-brand-gold/40 flex items-center justify-center text-2xl text-brand-gold">
-            <Scissors className="w-7 h-7" />
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-brand-gold tracking-wider md:tracking-widest">
-            Barbería
-          </h1>
-        </div>
-        {right ? (
-          <div className="w-full md:w-auto flex justify-center md:justify-end">
-            {right}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
+
 
 function HomePage() {
   const [selectedProfile, setSelectedProfile] = useState(null);
@@ -1970,28 +2062,29 @@ function AdminGatePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-brand-black">
-        <BrandHeader />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-gray-300">Cargando...</div>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brand-gold/20 border-t-brand-gold rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!supabase) {
     return (
-      <div className="min-h-screen bg-brand-black">
-        <BrandHeader
-          right={
-            <Link
-              to="/"
-              className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
-            >
-              Inicio
-            </Link>
-          }
-        />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-gray-300">
-          Variables `VITE_SUPABASE_URL` y/o `VITE_SUPABASE_ANON_KEY` faltan o son inválidas. Configura correctamente tus credenciales de Supabase para habilitar el login.
+      <div className="relative min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+        <div className="relative z-10 w-full max-w-md bg-black/40 backdrop-blur-xl rounded-[40px] p-10 border border-white/10 shadow-2xl text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wider">Error de Configuración</h2>
+          <p className="text-gray-400 text-sm leading-relaxed mb-8">
+            Faltan las credenciales de Supabase. Por favor, configura <code className="text-brand-gold bg-black/40 px-2 py-1 rounded">VITE_SUPABASE_URL</code> y <code className="text-brand-gold bg-black/40 px-2 py-1 rounded">VITE_SUPABASE_ANON_KEY</code>.
+          </p>
+          <Link
+            to="/"
+            className="inline-block bg-brand-gold text-brand-black px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all"
+          >
+            Volver al Inicio
+          </Link>
         </div>
       </div>
     );
@@ -1999,97 +2092,124 @@ function AdminGatePage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-brand-black">
-        <BrandHeader />
-        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="rounded-2xl border-[0.5px] border-brand-gold/40 bg-black/35 backdrop-blur-md p-6 shadow-lg"
-          >
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <div className="flex items-center gap-3">
-                <span className="text-brand-gold text-xl">🔒</span>
-                <h2 className="text-2xl font-semibold font-serif text-brand-gold">{isRegistering ? 'Registrar Administrador' : 'Login Administrador'}</h2>
-              </div>
-              <Link
-                to="/"
-                className="bg-brand-black text-brand-gold px-3 py-1 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30 text-sm"
-              >
-                Inicio
-              </Link>
+      <div className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex items-center justify-center p-6">
+        <div 
+          className="absolute inset-0 bg-cover bg-center blur-[3px] opacity-40 scale-105"
+          style={{ backgroundImage: `url('/images/resumen.jpg')` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/90" />
+        
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 w-full max-w-md bg-black/40 backdrop-blur-xl rounded-[48px] p-10 md:p-12 border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden"
+        >
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
+          
+          <div className="flex flex-col items-center mb-10">
+            <div className="w-14 h-14 rounded-2xl border-2 border-brand-gold/30 flex items-center justify-center mb-6 bg-black/20 backdrop-blur-sm shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+              <Lock className="w-7 h-7 text-brand-gold" />
             </div>
-            <div className="h-0.5 bg-brand-gold w-16 mb-6"></div>
-            <div className="space-y-4">
-              {message && <div className="text-green-400 text-sm mb-2">{message}</div>}
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+            <h2 className="text-2xl font-serif text-brand-gold tracking-[0.15em] font-bold uppercase text-center">
+              {isRegistering ? 'Registro' : 'Acceso'} Admin
+            </h2>
+            <div className="h-[1px] w-12 bg-brand-gold/50 mt-3" />
+          </div>
+
+          <div className="space-y-6">
+            {message && (
+              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl text-green-500 text-[10px] font-black uppercase tracking-widest text-center">
+                {message}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-4">Email</label>
+              <div className="relative group">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors">
                   <Mail className="w-5 h-5" />
                 </span>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Correo"
-                  className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                  placeholder="admin@barberia.com"
+                  className="w-full pl-14 pr-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-medium placeholder:text-gray-800"
                 />
               </div>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold/70">
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-4">Password</label>
+              <div className="relative group">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-gold transition-colors">
                   <Lock className="w-5 h-5" />
                 </span>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Contraseña"
-                  className="w-full pl-10 px-3 py-2 bg-transparent border border-brand-gold/40 text-gray-100 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 focus:border-brand-gold"
+                  placeholder="••••••••"
+                  className="w-full pl-14 pr-6 py-5 bg-[#0a0a0a]/50 text-gray-200 rounded-2xl focus:outline-none shadow-[inset_8px_8px_16px_#050505,inset_-8px_-8px_16px_#151515] transition-all font-medium placeholder:text-gray-800"
                 />
               </div>
-              {error ? <div className="text-red-300 text-sm">{error}</div> : null}
-              <button
-                onClick={handleAuth}
-                className="w-full bg-brand-gold text-brand-black px-5 py-3 rounded-xl font-bold shadow-[0_10px_24px_rgba(212,175,55,0.25)] hover:brightness-110 transition-all"
-              >
-                {isRegistering ? 'Registrarse' : 'Ingresar'}
-              </button>
-              <div className="text-center mt-4">
-                <button
-                  onClick={() => {
-                    setIsRegistering(!isRegistering);
-                    setError('');
-                    setMessage('');
-                  }}
-                  className="text-gray-400 text-sm hover:text-brand-gold transition-colors underline"
-                >
-                  {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate aquí'}
-                </button>
-              </div>
             </div>
-          </motion.div>
-        </div>
+
+            {error && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-[10px] font-black uppercase tracking-widest text-center animate-pulse">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleAuth}
+              className="w-full bg-brand-gold text-brand-black px-8 py-5 rounded-[20px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] text-sm mt-4"
+            >
+              {isRegistering ? 'Crear Cuenta' : 'Entrar al Panel'}
+            </button>
+
+            <div className="flex flex-col gap-4 mt-8">
+              <button
+                onClick={() => {
+                  setIsRegistering(!isRegistering);
+                  setError('');
+                  setMessage('');
+                }}
+                className="text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-brand-gold transition-colors text-center"
+              >
+                {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+              </button>
+              
+              <Link
+                to="/"
+                className="text-gray-700 text-[10px] font-black uppercase tracking-widest hover:text-gray-400 transition-colors text-center"
+              >
+                Volver al Inicio
+              </Link>
+            </div>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-brand-black">
-        <BrandHeader
-          right={
-            <button
-              onClick={signOut}
-              className="bg-brand-black text-brand-gold px-4 py-2 rounded-md hover:bg-black/40 transition-colors border border-brand-gold/30"
-            >
-              Salir
-            </button>
-          }
-        />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-          <div className="bg-brand-gray rounded-2xl shadow-lg border border-brand-gold/30 p-6 text-gray-300">
-            Tu usuario no está autorizado como administrador.
+      <div className="relative min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+        <div className="relative z-10 w-full max-w-md bg-black/40 backdrop-blur-xl rounded-[40px] p-10 border border-white/10 shadow-2xl text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-8 h-8 text-red-500" />
           </div>
+          <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wider">Acceso Restringido</h2>
+          <p className="text-gray-400 text-sm leading-relaxed mb-8">
+            Tu cuenta no tiene privilegios de administrador. Contacta al soporte si crees que esto es un error.
+          </p>
+          <button
+            onClick={signOut}
+            className="w-full bg-white/5 text-gray-400 px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all border border-white/5"
+          >
+            Cerrar Sesión
+          </button>
         </div>
       </div>
     );
