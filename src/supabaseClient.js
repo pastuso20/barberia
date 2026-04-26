@@ -1,14 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Usamos valores por defecto vacíos si las variables no están definidas
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-let isValidUrl = false;
-try {
-  const u = new URL(supabaseUrl);
-  isValidUrl = u.hostname.endsWith('.supabase.co');
-} catch (_) {
-  isValidUrl = false;
-}
+// Limpiamos la URL de posibles espacios o comillas accidentales
+const cleanUrl = supabaseUrl.trim().replace(/['"]/g, '');
+const cleanKey = supabaseAnonKey.trim().replace(/['"]/g, '');
 
-export const supabase = isValidUrl && !!supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+// Solo creamos el cliente si tenemos ambos valores
+export const supabase = (cleanUrl && cleanKey) 
+  ? createClient(cleanUrl, cleanKey) 
+  : null;
