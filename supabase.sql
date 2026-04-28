@@ -1,5 +1,6 @@
 create table if not exists public.admins (
   user_id uuid primary key references auth.users (id) on delete cascade,
+  email text,
   created_at timestamptz not null default now()
 );
 
@@ -124,3 +125,36 @@ grant select on public.appointment_private to authenticated;
 grant execute on function public.is_admin() to authenticated;
 grant execute on function public.get_busy_slots(date) to anon, authenticated;
 grant execute on function public.create_appointment(text, timestamptz, text, text) to anon, authenticated;
+
+-- Tabla para los cierres diarios
+create table if not exists public.daily_closings (
+  id bigint generated always as identity primary key,
+  initial_balance numeric not null default 0,
+  cash_fund numeric not null default 0,
+  final_balance numeric not null default 0,
+  total_sales numeric not null default 0,
+  total_haircuts numeric not null default 0,
+  total_products numeric not null default 0,
+  total_expenses numeric not null default 0,
+  haircuts_data jsonb not null default '[]',
+  products_data jsonb not null default '[]',
+  expenses_data jsonb not null default '[]',
+  payment_methods_summary jsonb not null default '{}',
+  created_at timestamptz not null default now()
+);
+
+alter table public.daily_closings enable row level security;
+
+create policy "Admins can read daily closings"
+on public.daily_closings
+for select
+to authenticated
+using (public.is_admin());
+
+create policy "Admins can insert daily closings"
+on public.daily_closings
+for insert
+to authenticated
+with check (public.is_admin());
+
+grant select, insert on public.daily_closings to authenticated;

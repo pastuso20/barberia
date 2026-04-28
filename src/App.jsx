@@ -2021,6 +2021,7 @@ function AdminGatePage() {
       const { data, error: qError } = await supabase.from('admins').select('user_id').eq('user_id', session.user.id).maybeSingle();
       if (cancelled) return;
       if (qError) {
+        console.error('Error al verificar privilegios de admin:', qError);
         setIsAdmin(false);
       } else {
         setIsAdmin(!!data);
