@@ -1513,7 +1513,7 @@ function HomePage() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/90" />
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]" />
 
-      <div className="relative z-10 w-full max-w-5xl px-6 py-12 flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-4xl px-4 py-8 flex flex-col items-center">
         {/* Encabezado de Marca Refinado */}
         <motion.div 
           initial={{ opacity: 0, y: -30 }}
@@ -1534,7 +1534,7 @@ function HomePage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="w-full bg-black/40 backdrop-blur-xl rounded-[40px] p-8 md:p-10 border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden"
+          className="w-full bg-black/40 backdrop-blur-xl rounded-[40px] p-6 md:p-8 border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden"
         >
           {/* Sutil brillo de fondo para la tarjeta */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-gold/5 blur-[80px] rounded-full" />
@@ -1549,7 +1549,7 @@ function HomePage() {
             <motion.div 
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
               onClick={() => setSelectedProfile('admin')}
-              className={`relative cursor-pointer group rounded-[28px] p-8 border transition-all duration-500 flex flex-col items-center justify-center aspect-square md:aspect-[1.1/1] ${
+              className={`relative cursor-pointer group rounded-[28px] p-6 border transition-all duration-500 flex flex-col items-center justify-center aspect-[4/3] md:aspect-[1.5/1] ${
                 selectedProfile === 'admin' 
                 ? 'bg-brand-gold/[0.07] border-brand-gold shadow-[0_0_40px_rgba(212,175,55,0.15)]' 
                 : 'bg-[#111]/60 border-white/5 hover:border-brand-gold/40 hover:bg-[#151515]'
@@ -1583,7 +1583,7 @@ function HomePage() {
             <motion.div 
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
               onClick={() => setSelectedProfile('cliente')}
-              className={`relative cursor-pointer group rounded-[28px] p-8 border transition-all duration-500 flex flex-col items-center justify-center aspect-square md:aspect-[1.1/1] ${
+              className={`relative cursor-pointer group rounded-[28px] p-6 border transition-all duration-500 flex flex-col items-center justify-center aspect-[4/3] md:aspect-[1.5/1] ${
                 selectedProfile === 'cliente' 
                 ? 'bg-brand-gold/[0.07] border-brand-gold shadow-[0_0_40px_rgba(212,175,55,0.15)]' 
                 : 'bg-[#111]/60 border-white/5 hover:border-brand-gold/40 hover:bg-[#151515]'
